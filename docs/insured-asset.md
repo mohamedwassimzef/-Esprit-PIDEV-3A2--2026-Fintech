@@ -13,19 +13,20 @@ This document describes the Insured Asset entity, the UI interactions for create
 - `value` (double)
 - `description` (String)
 - `createdAt` (LocalDateTime)
+- `location` (String)
 - `userId` (int) - foreign key referencing `user.id`
 
 **Constructors**
 - `InsuredAsset()`
-- `InsuredAsset(int id, String name, String type, double value, String description, LocalDateTime createdAt, int userId)`
-- `InsuredAsset(String name, String type, double value, String description, int userId)`
+- `InsuredAsset(int id, String name, String type, double value, String description, LocalDateTime createdAt, String location, int userId)`
+- `InsuredAsset(String name, String type, double value, String description, String location, int userId)`
 
 ## UI Layout (Main.fxml)
 
 The insured asset UI is split into two tabs in `View/Main.fxml`:
 
 1. **Form tab** (edit/create)
-   - `TextField` inputs for `name`, `type`, `value`, `description`, `userId`
+   - `TextField` inputs for `name`, `type`, `value`, `description`, `location`, `userId`
    - `DatePicker` for `createdAt`
    - `Button` `SubAsset` for submit/update
 
@@ -35,10 +36,10 @@ The insured asset UI is split into two tabs in `View/Main.fxml`:
    - `Update` and `Delete` buttons, disabled until a row is double-clicked
 
 Relevant FXML ids:
-- Form fields: `AssName`, `AssType`, `AssValue`, `AssDesc`, `AssCreated`, `AssUser`
+- Form fields: `AssName`, `AssType`, `AssValue`, `AssDesc`, `AssCreated`, `AssLocation`, `AssUser`
 - Submit button: `SubAsset`
 - Table: `assetsTable`
-- Columns: `colId`, `colName`, `colType`, `colValue`, `colDescription`, `colCreatedAt`, `colUserId`
+- Columns: `colId`, `colName`, `colType`, `colValue`, `colDescription`, `colCreatedAt`, `colLocation`, `colUserId`
 - Buttons: `updateAssetButton`, `deleteAssetButton`
 - Tabs: `mainTabs`, `assetFormTab`, `assetListTab`
 
@@ -80,7 +81,7 @@ The controller manages:
    - This sets `selectedAsset`
    - Enables the `Update`/`Delete` buttons
 3. User clicks **Update**.
-   - Controller fills the form fields with the selected asset data
+   - Controller fills the form fields with the selected asset data, including `location`
    - Switches to the form tab
    - Sets `isEditMode = true` and changes the button text to "Update"
 4. User edits the values and clicks `Update` (same button).
@@ -123,7 +124,7 @@ The flag is reset to `false` when:
 8. Database update is executed
 9. UI refreshes the table
 
-This flow ensures the update always uses the original `id` while allowing all other fields to be changed.
+This flow ensures the update always uses the original `id` while allowing all other fields (including `location`) to be changed.
 
 ## Notes and Constraints
 
@@ -131,6 +132,7 @@ This flow ensures the update always uses the original `id` while allowing all ot
 - The ID column is hidden in the UI but used internally.
 - The Update/Delete buttons are disabled until a row is double-clicked.
 - `createdAt` uses the selected date from the `DatePicker` when provided.
+- `location` is a required text field in the form and is displayed in the table.
 
 ## Related Files
 
@@ -138,4 +140,3 @@ This flow ensures the update always uses the original `id` while allowing all ot
 - `src/main/java/tn/esprit/dao/InsuredAssetDAO.java`
 - `src/main/java/controller/MainController.java`
 - `src/main/resources/View/Main.fxml`
-

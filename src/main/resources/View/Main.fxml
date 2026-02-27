@@ -107,6 +107,12 @@
                                         <Label text="CREATED AT" visible="false" />
                                         <DatePicker fx:id="AssCreated" visible="false" prefWidth="356.0" />
 
+                                        <Label text="CITY" />
+                                        <ComboBox fx:id="cityCombo" promptText="Select City" />
+
+                                        <Label text="AREA" />
+                                        <ComboBox fx:id="areaCombo" promptText="Select Area" />
+
                                         <Region prefHeight="12.0" />
 
                                         <Button fx:id="SubAsset" text="Submit Asset"
@@ -138,6 +144,7 @@
                                         <TableColumn fx:id="colDescription" prefWidth="160.0" text="Description" />
                                         <TableColumn fx:id="colCreatedAt" prefWidth="140.0" text="Created At" />
                                         <TableColumn fx:id="colUserId" prefWidth="80.0" text="User ID" />
+                                        <TableColumn fx:id="colLocation" text="Location" />
                                     </columns>
                                     <columnResizePolicy>
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

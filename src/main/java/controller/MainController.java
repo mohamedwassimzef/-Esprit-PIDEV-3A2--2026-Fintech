@@ -26,7 +26,10 @@ import tn.esprit.enums.ContractStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 public class MainController {
@@ -52,6 +55,13 @@ public class MainController {
     @FXML
     private TextField AssUser;
 
+    // Replaced free-text location with city + area selectors
+    @FXML
+    private ComboBox<String> cityCombo;
+
+    @FXML
+    private ComboBox<String> areaCombo;
+
     @FXML
     private TextField nameField;
 
@@ -75,6 +85,9 @@ public class MainController {
 
     @FXML
     private TableColumn<InsuredAsset, LocalDateTime> colCreatedAt;
+
+    @FXML
+    private TableColumn<InsuredAsset, String> colLocation;
 
     @FXML
     private TableColumn<InsuredAsset, Integer> colUserId;
@@ -177,6 +190,9 @@ public class MainController {
     private InsuredContract selectedContract;
     private boolean isContractEditMode = false;
 
+    // Static city -> areas map for demo; could be loaded from DB later
+    private final Map<String, List<String>> cityAreas = new HashMap<>();
+
     @FXML
     public void handleAdd() {
         System.out.println(nameField.getText());
@@ -191,6 +207,7 @@ public class MainController {
         colValue.setCellValueFactory(new PropertyValueFactory<>("value"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+        colLocation.setCellValueFactory(new PropertyValueFactory<>("location"));
         colUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
 
         colId.setVisible(false);
@@ -218,7 +235,100 @@ public class MainController {
         refreshAssetsTable();
         setEditMode(false);
 
+        // Initialize city/area data and bindings
+        initLocationCombos();
+
         applyInputControls();
+    }
+
+    private void initLocationCombos() {
+        // Define Tunisian cities and some example areas/neighborhoods
+        cityAreas.put("Tunis", Arrays.asList("Centre Ville", "Lac 1", "Lac 2", "La Marsa", "Bardo", "Ariana", "Ben Arous"));
+        cityAreas.put("Ariana", Arrays.asList("Ennasr", "Menzah 8", "Menzah 9", "Raoued"));
+        cityAreas.put("Ben Arous", Arrays.asList("Ezzahra", "Rades", "Hammam Lif", "El Mourouj"));
+        cityAreas.put("Manouba", Arrays.asList("Manouba Centre", "Douar Hicher", "Oued Ellil"));
+
+        cityAreas.put("Sfax", Arrays.asList("Sakiet Ezzit", "Sakiet Eddaier", "Centre", "Thyna", "Gremda"));
+        cityAreas.put("Sousse", Arrays.asList("Khezama", "Hammam Sousse", "Akouda", "M'saken"));
+        cityAreas.put("Monastir", Arrays.asList("Monastir Ville", "Jemmal", "Ksar Helal", "Sahline"));
+        cityAreas.put("Mahdia", Arrays.asList("Mahdia Ville", "Chebba", "Ksour Essef"));
+
+        cityAreas.put("Nabeul", Arrays.asList("Nabeul Ville", "Hammamet", "Kelibia", "Dar Chaabane"));
+        cityAreas.put("Bizerte", Arrays.asList("Bizerte Ville", "Menzel Bourguiba", "Mateur", "Raf Raf"));
+        cityAreas.put("Beja", Arrays.asList("Beja Ville", "Medjez El Bab", "Testour"));
+        cityAreas.put("Jendouba", Arrays.asList("Jendouba Ville", "Tabarka", "Ghardimaou"));
+
+        cityAreas.put("Kairouan", Arrays.asList("Kairouan Ville", "Chebika", "Oueslatia"));
+        cityAreas.put("Sidi Bouzid", Arrays.asList("Sidi Bouzid Ville", "Regueb", "Meknassy"));
+        cityAreas.put("Kasserine", Arrays.asList("Kasserine Ville", "Feriana", "Thala"));
+        cityAreas.put("Gafsa", Arrays.asList("Gafsa Ville", "Metlaoui", "Redeyef"));
+
+        cityAreas.put("Gabes", Arrays.asList("Gabes Ville", "Ghannouch", "Mareth"));
+        cityAreas.put("Medenine", Arrays.asList("Medenine Ville", "Zarzis", "Ben Guerdane", "Djerba"));
+        cityAreas.put("Tataouine", Arrays.asList("Tataouine Ville", "Remada", "Ghomrassen"));
+        cityAreas.put("Tozeur", Arrays.asList("Tozeur Ville", "Nefta", "Degache"));
+        cityAreas.put("Kebili", Arrays.asList("Kebili Ville", "Douz", "Souk Lahad"));
+
+        if (cityCombo != null) {
+            cityCombo.setItems(FXCollections.observableArrayList(cityAreas.keySet()));
+            cityCombo.valueProperty().addListener((obs, oldCity, newCity) -> {
+                if (newCity != null) {
+                    List<String> areas = cityAreas.getOrDefault(newCity, List.of());
+                    areaCombo.setItems(FXCollections.observableArrayList(areas));
+                    areaCombo.setDisable(areas.isEmpty());
+                    areaCombo.getSelectionModel().clearSelection();
+                } else {
+                    areaCombo.getItems().clear();
+                    areaCombo.setDisable(true);
+                }
+            });
+        }
+        if (areaCombo != null) {
+            areaCombo.setDisable(true); // disabled until a city is selected
+        }
+    }
+
+    private String buildLocationFromSelection() {
+        String city = cityCombo != null ? cityCombo.getValue() : null;
+        String area = areaCombo != null ? areaCombo.getValue() : null;
+        if (city == null || city.isBlank()) {
+            return null;
+        }
+        if (area == null || area.isBlank()) {
+            return city; // only city selected
+        }
+        return city + " - " + area;
+    }
+
+    private void populateLocationCombosFromLocationString(String location) {
+        if (location == null || location.isBlank() || cityCombo == null || areaCombo == null) {
+            if (cityCombo != null) cityCombo.getSelectionModel().clearSelection();
+            if (areaCombo != null) {
+                areaCombo.getSelectionModel().clearSelection();
+                areaCombo.setDisable(true);
+            }
+            return;
+        }
+        String city = location;
+        String area = null;
+        if (location.contains(" - ")) {
+            String[] parts = location.split(" - ", 2);
+            city = parts[0];
+            area = parts[1];
+        }
+        // Set city first to populate areas
+        cityCombo.getSelectionModel().select(city);
+        List<String> areas = cityAreas.get(city);
+        if (areas != null && !areas.isEmpty()) {
+            areaCombo.setItems(FXCollections.observableArrayList(areas));
+            areaCombo.setDisable(false);
+            if (area != null && areas.contains(area)) {
+                areaCombo.getSelectionModel().select(area);
+            }
+        } else {
+            areaCombo.getSelectionModel().clearSelection();
+            areaCombo.setDisable(true);
+        }
     }
 
     private void setupContractTable() {
@@ -312,6 +422,9 @@ public class MainController {
         AssDesc.setText(selectedAsset.getDescription());
         AssUser.setText(String.valueOf(selectedAsset.getUserId()));
 
+        // Fill city/area from stored location string
+        populateLocationCombosFromLocationString(selectedAsset.getLocation());
+
         if (selectedAsset.getCreatedAt() != null) {
             AssCreated.setValue(selectedAsset.getCreatedAt().toLocalDate());
         } else {
@@ -370,10 +483,13 @@ public class MainController {
             String description = AssDesc.getText().trim();
             String userId = AssUser.getText().trim();
 
+            // Build location from city + area selectors
+            String location = buildLocationFromSelection();
+
             // Validate required fields
-            if (name.isEmpty() || type.isEmpty() || value.isEmpty() || userId.isEmpty()) {
+            if (name.isEmpty() || type.isEmpty() || value.isEmpty() || userId.isEmpty() || location == null) {
                 showAlert(AlertType.ERROR, "Validation Error",
-                         "Please fill in all required fields (Name, Type, Value, User ID)");
+                         "Please fill in all required fields (Name, Type, Value, City, User ID). Area is optional.");
                 return;
             }
 
@@ -427,6 +543,7 @@ public class MainController {
                     assetValue,
                     description,
                     selectedAsset.getCreatedAt(),
+                    location,
                     userIdInt
                 );
 
@@ -449,6 +566,7 @@ public class MainController {
                     type,
                     assetValue,
                     description,
+                    location,
                     userIdInt
                 );
 
@@ -673,6 +791,13 @@ public class MainController {
         AssDesc.clear();
         AssUser.clear();
         AssCreated.setValue(null);
+        if (cityCombo != null) {
+            cityCombo.getSelectionModel().clearSelection();
+        }
+        if (areaCombo != null) {
+            areaCombo.getSelectionModel().clearSelection();
+            areaCombo.setDisable(true);
+        }
     }
 
     private void clearContractForm() {

@@ -22,8 +22,8 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
 
     @Override
     public boolean create(InsuredAsset entity) {
-        String query = "INSERT INTO insured_asset (name, type, value, description, created_at, user_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO insured_asset (name, type, value, description, created_at, location, user_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, entity.getName());
@@ -32,7 +32,8 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
             pstmt.setString(4, entity.getDescription());
             pstmt.setTimestamp(5, Timestamp.valueOf(entity.getCreatedAt() != null ?
                     entity.getCreatedAt() : LocalDateTime.now()));
-            pstmt.setInt(6, entity.getUserId());
+            pstmt.setString(6, entity.getLocation());
+            pstmt.setInt(7, entity.getUserId());
 
             int rowsInserted = pstmt.executeUpdate();
             return rowsInserted > 0;
@@ -79,7 +80,7 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
     @Override
     public boolean update(InsuredAsset entity) {
         String query = "UPDATE insured_asset SET name = ?, type = ?, value = ?, " +
-                "description = ?, created_at = ?, user_id = ? WHERE id = ?";
+                "description = ?, created_at = ?, location = ?, user_id = ? WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, entity.getName());
@@ -88,8 +89,9 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
             pstmt.setString(4, entity.getDescription());
             pstmt.setTimestamp(5, Timestamp.valueOf(entity.getCreatedAt() != null ?
                     entity.getCreatedAt() : LocalDateTime.now()));
-            pstmt.setInt(6, entity.getUserId());
-            pstmt.setInt(7, entity.getId());
+            pstmt.setString(6, entity.getLocation());
+            pstmt.setInt(7, entity.getUserId());
+            pstmt.setInt(8, entity.getId());
 
             int rowsUpdated = pstmt.executeUpdate();
             return rowsUpdated > 0;
@@ -126,10 +128,11 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
         String type = rs.getString("type");
         double value = rs.getDouble("value");
         String description = rs.getString("description");
-        LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+        Timestamp ts = rs.getTimestamp("created_at");
+        LocalDateTime createdAt = ts != null ? ts.toLocalDateTime() : null;
+        String location = rs.getString("location");
         int userId = rs.getInt("user_id");
 
-        return new InsuredAsset(id, name, type, value, description, createdAt, userId);
+        return new InsuredAsset(id, name, type, value, description, createdAt, location, userId);
     }
 }
-

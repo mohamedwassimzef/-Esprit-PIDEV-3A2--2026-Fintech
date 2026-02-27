@@ -10,28 +10,31 @@ public class InsuredAsset {
     private double value;
     private String description;
     private LocalDateTime createdAt;
+    private String location;
     private int userId;
 
     // Constructors
     public InsuredAsset() {}
 
     public InsuredAsset(int id, String name, String type, double value,
-                        String description, LocalDateTime createdAt, int userId) {
+                        String description, LocalDateTime createdAt, String location, int userId) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.value = value;
         this.description = description;
         this.createdAt = createdAt;
+        this.location = location;
         this.userId = userId;
     }
 
     public InsuredAsset(String name, String type, double value,
-                        String description, int userId) {
+                        String description, String location, int userId) {
         this.name = name;
         this.type = type;
         this.value = value;
         this.description = description;
+        this.location = location;
         this.userId = userId;
     }
 
@@ -54,6 +57,9 @@ public class InsuredAsset {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
 
@@ -67,6 +73,7 @@ public class InsuredAsset {
                 ", value=" + value +
                 ", description='" + description + '\'' +
                 ", createdAt=" + createdAt +
+                ", location='" + location + '\'' +
                 ", userId=" + userId +
                 '}';
     }

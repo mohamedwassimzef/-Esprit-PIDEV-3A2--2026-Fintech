@@ -134,7 +134,7 @@ public class CreateOperationTest {
         InsuredAssetDAO assetDAO = new InsuredAssetDAO();
         long timestamp = System.currentTimeMillis();
         InsuredAsset asset = new InsuredAsset("Test Asset " + timestamp, "TestType", 9999.99,
-                "Test asset description", createdUserId);
+                "Test asset description", "Test Location", createdUserId);
         boolean result = assetDAO.create(asset);
         System.out.println("Create InsuredAsset: " + (result ? "✓ SUCCESS" : "✗ FAILED"));
     }
