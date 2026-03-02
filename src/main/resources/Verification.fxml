@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.esprit.controllers.VerificationController"
+           prefWidth="900" prefHeight="600"
+           style="-fx-background-color: #F3F4F6;">
+
+    <VBox alignment="TOP_CENTER" maxWidth="420" spacing="0"
+          style="-fx-background-color: white; -fx-background-radius: 20;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 5);">
+
+        <!-- Header -->
+        <HBox alignment="CENTER" prefHeight="80"
+              style="-fx-background-color: #1E3A8A; -fx-background-radius: 20 20 0 0;">
+            <Label text="💳 FinTech Portal"
+                   style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        </HBox>
+
+        <!-- Body -->
+        <VBox spacing="16">
+            <padding><Insets top="36" right="35" bottom="36" left="35"/></padding>
+
+            <Label text="📧 Verify your email"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+
+            <Label fx:id="emailLabel"
+                   text="We sent a 6-digit code to your email."
+                   wrapText="true"
+                   style="-fx-font-size: 13px; -fx-text-fill: #6B7280;"/>
+
+            <Label text="Verification Code"
+                   style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-font-weight: bold;"/>
+
+            <TextField fx:id="codeField"
+                       promptText="Enter 6-digit code"
+                       style="-fx-background-radius: 10; -fx-border-color: #D1D5DB;
+                              -fx-border-radius: 10; -fx-padding: 12;
+                              -fx-font-size: 20px; -fx-alignment: center;
+                              -fx-letter-spacing: 6px;"/>
+
+            <Label fx:id="messageLabel" text="" wrapText="true"
+                   style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+
+            <Button fx:id="verifyBtn"
+                    text="✅ Verify Account"
+                    prefWidth="350" prefHeight="45"
+                    style="-fx-background-color: #1E3A8A; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-font-size: 15px;
+                           -fx-background-radius: 12; -fx-cursor: hand;"
+                    onAction="#handleVerify"/>
+
+            <HBox spacing="10" alignment="CENTER">
+                <Button fx:id="resendBtn"
+                        text="Resend code"
+                        style="-fx-background-color: transparent; -fx-text-fill: #1E3A8A;
+                               -fx-font-size: 13px; -fx-cursor: hand;
+                               -fx-underline: true; -fx-border-color: transparent;"
+                        onAction="#handleResend"/>
+                <Label text="·" style="-fx-text-fill: #9CA3AF;"/>
+                <Button text="Back to Login"
+                        style="-fx-background-color: transparent; -fx-text-fill: #6B7280;
+                               -fx-font-size: 13px; -fx-cursor: hand;
+                               -fx-underline: true; -fx-border-color: transparent;"
+                        onAction="#handleBackToLogin"/>
+            </HBox>
+        </VBox>
+    </VBox>
+</StackPane>

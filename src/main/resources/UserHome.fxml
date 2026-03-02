@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.UserHomeController"
+            prefWidth="900" prefHeight="600"
+            style="-fx-background-color: #F3F4F6;">
+
+    <!-- TOP HEADER -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10"
+              style="-fx-background-color: #1E3A8A;" prefHeight="70">
+            <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+            <Label text="💳 FinTech Portal"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🚪 Logout"
+                    style="-fx-background-color: #DC2626;
+                           -fx-text-fill: white;
+                           -fx-font-weight: bold;
+                           -fx-background-radius: 10;
+                           -fx-cursor: hand;"
+                    onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <!-- CENTER CONTENT -->
+    <center>
+        <VBox alignment="CENTER" spacing="30">
+            <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+
+            <!-- Welcome Banner -->
+            <VBox alignment="CENTER" spacing="8"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 20;
+                         -fx-padding: 40;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0, 0, 4);">
+
+                <Label text="👋"
+                       style="-fx-font-size: 60px;"/>
+
+                <Label fx:id="welcomeLabel"
+                       text="Welcome!"
+                       style="-fx-font-size: 30px;
+                              -fx-font-weight: bold;
+                              -fx-text-fill: #1E3A8A;"/>
+
+                <Label text="You are logged in to your account"
+                       style="-fx-font-size: 15px;
+                              -fx-text-fill: #6B7280;"/>
+            </VBox>
+
+            <!-- Profile Card -->
+            <VBox spacing="15"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 20;
+                         -fx-padding: 30;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 3);">
+
+                <Label text="👤 My Profile"
+                       style="-fx-font-size: 18px;
+                              -fx-font-weight: bold;
+                              -fx-text-fill: #1E3A8A;"/>
+
+                <Separator/>
+
+                <HBox spacing="20">
+                    <!-- Left column labels -->
+                    <VBox spacing="14">
+                        <Label text="Name :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        <Label text="Email :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        <Label text="Phone :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        <Label text="Role :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        <Label text="Verified :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        <Label text="Member since :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                    </VBox>
+
+                    <!-- Right column values -->
+                    <VBox spacing="14">
+                        <Label fx:id="profileName"  text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                        <Label fx:id="profileEmail" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                        <Label fx:id="profilePhone" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                        <Label fx:id="profileRole"  text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                        <Label fx:id="profileVerified" text="-" style="-fx-font-size: 14px;"/>
+                        <Label fx:id="profileCreatedAt" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>

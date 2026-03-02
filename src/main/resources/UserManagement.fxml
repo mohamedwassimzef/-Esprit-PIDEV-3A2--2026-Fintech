@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.UserManagementController"
+            prefWidth="1100" prefHeight="650"
+            style="-fx-background-color: #F3F4F6;">
+
+    <!-- ═══════════════════ TOP HEADER ═══════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10"
+              style="-fx-background-color: #1E3A8A;" prefHeight="70">
+            <padding><Insets top="15" right="20" bottom="15" left="20"/></padding>
+
+            <Label text="👤 User Management Dashboard"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+            <Label text="Admin Panel"
+                   style="-fx-font-size: 14px; -fx-text-fill: #FACC15; -fx-font-weight: bold;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="🚪 Logout"
+                    style="-fx-background-color: #DC2626; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
+                    onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <!-- ═══════════════════ CENTER — TABLE ═══════════════════ -->
+    <center>
+        <VBox spacing="12">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+            <!-- Search bar -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="🔍" style="-fx-font-size: 16px;"/>
+                <TextField fx:id="searchField"
+                           promptText="Search by name, email or phone..."
+                           prefWidth="350"
+                           style="-fx-background-radius: 10; -fx-font-size: 13px;"/>
+            </HBox>
+
+            <Label text="📋 Users List"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+
+            <VBox style="-fx-background-color: white; -fx-background-radius: 15;
+                         -fx-padding: 15;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 8, 0, 0, 3);">
+
+                <TableView fx:id="userTable" prefHeight="430"
+                           style="-fx-border-color: transparent; -fx-background-radius: 10;">
+                    <columns>
+                        <TableColumn fx:id="colId"       text="ID"       prefWidth="55"/>
+                        <TableColumn fx:id="colName"     text="Name"     prefWidth="160"/>
+                        <TableColumn fx:id="colEmail"    text="Email"    prefWidth="230"/>
+                        <TableColumn fx:id="colPhone"    text="Phone"    prefWidth="120"/>
+                        <TableColumn fx:id="colRole"     text="Role"     prefWidth="110"/>
+                        <TableColumn fx:id="colVerified" text="Verified" prefWidth="80"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+
+    <!-- ═══════════════════ RIGHT — FORM ═══════════════════ -->
+    <right>
+        <VBox spacing="14" prefWidth="300"
+              style="-fx-background-color: white; -fx-background-radius: 15;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 8, 0, 0, 3);">
+            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+
+            <Label text="✏ User Form"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+
+            <Separator/>
+
+            <!-- Name -->
+            <Label text="Full Name" style="-fx-font-size: 12px; -fx-text-fill: #6B7280;"/>
+            <TextField fx:id="nameField" promptText="Full Name"
+                       style="-fx-background-radius: 10;"/>
+
+            <!-- Email (editable on Add, read-only visual hint on Update) -->
+            <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #6B7280;"/>
+            <TextField fx:id="emailField" promptText="Email Address"
+                       style="-fx-background-radius: 10;"/>
+
+            <!-- Phone -->
+            <Label text="Phone (8 digits)" style="-fx-font-size: 12px; -fx-text-fill: #6B7280;"/>
+            <TextField fx:id="phoneField" promptText="Phone Number"
+                       style="-fx-background-radius: 10;"/>
+
+            <!-- Role ComboBox — loaded from DB -->
+            <Label text="Role" style="-fx-font-size: 12px; -fx-text-fill: #6B7280;"/>
+            <ComboBox fx:id="roleCombo" prefWidth="260"
+                      style="-fx-background-radius: 10;"/>
+
+            <!-- Verified checkbox -->
+            <CheckBox fx:id="verifiedCheck" text="Account Verified"
+                      style="-fx-font-size: 13px;"/>
+
+            <!-- NOTE: No password field — admin cannot set/view passwords -->
+            <Label text="ℹ A temporary password is auto-generated on Add."
+                   style="-fx-font-size: 11px; -fx-text-fill: #9CA3AF;"
+                   wrapText="true"/>
+
+            <Separator/>
+
+            <!-- Action buttons -->
+            <HBox spacing="8" alignment="CENTER">
+                <Button text="➕ Add"
+                        prefWidth="80"
+                        style="-fx-background-color: #16A34A; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
+                        onAction="#handleAdd"/>
+                <Button text="✏ Update"
+                        prefWidth="80"
+                        style="-fx-background-color: #1E3A8A; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
+                        onAction="#handleUpdate"/>
+                <Button text="🗑 Delete"
+                        prefWidth="80"
+                        style="-fx-background-color: #DC2626; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
+                        onAction="#handleDelete"/>
+            </HBox>
+
+            <Button text="✖ Clear Form"
+                    prefWidth="260"
+                    style="-fx-background-color: #E5E7EB; -fx-text-fill: #374151;
+                           -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
+                    onAction="#handleClear"/>
+
+            <Label fx:id="messageLabel" text="" wrapText="true"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+        </VBox>
+    </right>
+
+</BorderPane>
