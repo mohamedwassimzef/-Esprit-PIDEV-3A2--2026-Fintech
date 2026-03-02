@@ -56,7 +56,7 @@ public class LoginController {
         if (authService.isAdmin(user)) {
             SceneManager.switchScene("/View/AdminDashboard.fxml", "Admin Dashboard");
         } else {
-            SceneManager.switchScene("/View/UserDashboard.fxml", "User Dashboard");
+            SceneManager.switchScene("/View/Home.fxml", "FinTech – Home");
         }
     }
 

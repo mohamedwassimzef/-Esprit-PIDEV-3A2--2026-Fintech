@@ -120,5 +120,18 @@ public class ComplaintDAO implements CrudInterface<Complaint> {
 
         return new Complaint(id, subject, status, complaintDate, response, userId, createdAt);
     }
+
+    public List<Complaint> findByUserId(int userId) {
+        List<Complaint> list = new ArrayList<>();
+        String query = "SELECT * FROM complaint WHERE user_id = ? ORDER BY created_at DESC";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) list.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Complaints by user: " + e.getMessage());
+        }
+        return list;
+    }
 }
 

@@ -124,5 +124,18 @@ public class LoanDAO implements CrudInterface<Loan> {
 
         return new Loan(id, userId, amount, interestRate, startDate, endDate, status, createdAt);
     }
+
+    public List<Loan> findByUserId(int userId) {
+        List<Loan> loans = new ArrayList<>();
+        String query = "SELECT * FROM loan WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) loans.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Loans by user: " + e.getMessage());
+        }
+        return loans;
+    }
 }
 

@@ -122,5 +122,18 @@ public class RepaymentDAO implements CrudInterface<Repayment> {
 
         return new Repayment(id, loanId, amount, paymentDate, paymentType, status, monthlyPayment);
     }
+
+    public List<Repayment> findByLoanId(int loanId) {
+        List<Repayment> list = new ArrayList<>();
+        String query = "SELECT * FROM repayment WHERE loan_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, loanId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) list.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Repayments by loan: " + e.getMessage());
+        }
+        return list;
+    }
 }
 

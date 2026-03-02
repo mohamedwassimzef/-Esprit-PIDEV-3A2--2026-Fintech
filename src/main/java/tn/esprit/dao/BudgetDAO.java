@@ -125,5 +125,18 @@ public class BudgetDAO implements CrudInterface<Budget> {
 
         return new Budget(id, name, amount, startDate, endDate, userId, category, spentAmount);
     }
+
+    public List<Budget> findByUserId(int userId) {
+        List<Budget> budgets = new ArrayList<>();
+        String query = "SELECT * FROM budget WHERE user_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) budgets.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Budgets by user: " + e.getMessage());
+        }
+        return budgets;
+    }
 }
 

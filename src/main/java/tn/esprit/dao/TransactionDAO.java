@@ -138,5 +138,40 @@ public class TransactionDAO implements CrudInterface<Transaction> {
 
         return new Transaction(id, userId, amount, type, status, description, createdAt, referenceType, referenceId, currency);
     }
+
+    public List<Transaction> findByUserId(int userId) {
+        List<Transaction> list = new ArrayList<>();
+        String query = "SELECT * FROM transaction WHERE user_id = ? ORDER BY created_at DESC";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) list.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Transactions by user: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /** Saves a created transaction and returns the generated DB id (-1 on failure). */
+    public int createAndGetId(Transaction entity) {
+        String query = "INSERT INTO transaction (user_id, amount, type, status, description, " +
+                "reference_type, reference_id, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, entity.getUserId());
+            pstmt.setBigDecimal(2, entity.getAmount());
+            pstmt.setString(3, entity.getType().toString());
+            pstmt.setString(4, entity.getStatus() != null ? entity.getStatus().toString() : "PENDING");
+            pstmt.setString(5, entity.getDescription());
+            pstmt.setString(6, entity.getReferenceType() != null ? entity.getReferenceType().toString() : null);
+            pstmt.setObject(7, entity.getReferenceId());
+            pstmt.setString(8, entity.getCurrency() != null ? entity.getCurrency().toString() : "TND");
+            pstmt.executeUpdate();
+            ResultSet keys = pstmt.getGeneratedKeys();
+            if (keys.next()) return keys.getInt(1);
+        } catch (SQLException e) {
+            System.out.println("Error creating Transaction: " + e.getMessage());
+        }
+        return -1;
+    }
 }
 

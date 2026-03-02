@@ -16,7 +16,7 @@ public class MyDB {
             conx = DriverManager.getConnection(URL,USERNAME,PWD);
             System.out.println("Connected to DB!");
         } catch (SQLException e) {
-            System.out.println("⚠️  DB connection failed: " + e.getMessage());
+            System.out.println("[ERROR] DB connection failed: " + e.getMessage());
             System.out.println("   Make sure MySQL is running on 127.0.0.1:3306 with database 'fintech'.");
         }
     }

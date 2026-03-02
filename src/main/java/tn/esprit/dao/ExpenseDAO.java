@@ -121,5 +121,18 @@ public class ExpenseDAO implements CrudInterface<Expense> {
 
         return new Expense(id, amount, category, expenseDate, description, budgetId, createdAt);
     }
+
+    public List<Expense> findByBudgetId(int budgetId) {
+        List<Expense> expenses = new ArrayList<>();
+        String query = "SELECT * FROM expense WHERE budget_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, budgetId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) expenses.add(mapResultSetToEntity(rs));
+        } catch (SQLException e) {
+            System.out.println("Error finding Expenses by budget: " + e.getMessage());
+        }
+        return expenses;
+    }
 }
 

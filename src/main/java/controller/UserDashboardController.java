@@ -609,6 +609,11 @@ public class UserDashboardController {
     //  NAVIGATION / MENU
     // --------------------------------------------------------------------
     @FXML private void handleLogout() { SessionManager.getInstance().logout(); SceneManager.switchScene("/View/Login.fxml","Login"); }
+
+    @FXML private void handleBackHome()    { SceneManager.switchScene("/View/Home.fxml",                     "FinTech – Home"); }
+    @FXML private void goPersonalFinance() { SceneManager.switchScene("/View/PersonalFinanceDashboard.fxml", "Personal Finance"); }
+    @FXML private void goLoans()           { SceneManager.switchScene("/View/LoanDashboard.fxml",            "Loans"); }
+    @FXML private void goTransactions()    { SceneManager.switchScene("/View/TransactionDashboard.fxml",     "Transactions"); }
     @FXML private void handleQuit()   { Platform.exit(); }
 
     // --------------------------------------------------------------------

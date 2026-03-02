@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane prefHeight="720.0" prefWidth="1100.0"
+            stylesheets="@styles.css"
+            xmlns="http://javafx.com/javafx/22"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.HomeController">
+
+    <!-- ═══════════════════════════════════════════
+         TOP BAR
+    ═══════════════════════════════════════════ -->
+    <top>
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="12">
+            <Label text="FinTech" styleClass="topbar-brand"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="welcomeLabel" text="Welcome, User" styleClass="topbar-welcome"/>
+            <Button text="Logout" styleClass="btn-outline-gold"
+                    mnemonicParsing="false" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <!-- ═══════════════════════════════════════════
+         CENTER  – service cards grid
+    ═══════════════════════════════════════════ -->
+    <center>
+        <VBox alignment="CENTER" spacing="40" styleClass="home-center">
+
+            <!-- Headline -->
+            <VBox alignment="CENTER" spacing="6">
+                <Label text="What would you like to do today?" styleClass="home-headline"/>
+                <Label text="Select a service to get started" styleClass="home-subline"/>
+            </VBox>
+
+            <!-- Service Cards  (2 × 3 grid) -->
+            <GridPane hgap="28" vgap="28" alignment="CENTER">
+
+                <!-- Insurance -->
+                <VBox styleClass="service-card" onMouseClicked="#goInsurance"
+                      GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="&#x1F6E1;" styleClass="card-icon"/>
+                    <Label text="Insurance" styleClass="card-title"/>
+                    <Label text="Manage assets, packages&#10;&amp; contracts"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Button text="Open &#x2192;" styleClass="card-btn"
+                            mnemonicParsing="false" onAction="#goInsurance"/>
+                </VBox>
+
+                <!-- Personal Finance -->
+                <VBox styleClass="service-card" onMouseClicked="#goPersonalFinance"
+                      GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="&#x1F4B0;" styleClass="card-icon"/>
+                    <Label text="Personal Finance" styleClass="card-title"/>
+                    <Label text="Budgets, savings&#10;&amp; spending analysis"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Button text="Open &#x2192;" styleClass="card-btn"
+                            mnemonicParsing="false" onAction="#goPersonalFinance"/>
+                </VBox>
+
+                <!-- Transactions -->
+                <VBox styleClass="service-card" onMouseClicked="#goTransactions"
+                      GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label text="&#x1F4B3;" styleClass="card-icon"/>
+                    <Label text="Transactions" styleClass="card-title"/>
+                    <Label text="History, transfers&#10;&amp; payments"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Button text="Open &#x2192;" styleClass="card-btn"
+                            mnemonicParsing="false" onAction="#goTransactions"/>
+                </VBox>
+
+                <!-- Complaints -->
+                <VBox styleClass="service-card service-card-disabled"
+                      GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label text="📋" styleClass="card-icon"/>
+                    <Label text="Complaints" styleClass="card-title"/>
+                    <Label text="Submit &amp; track&#10;support requests"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Label text="Coming soon" styleClass="card-soon"/>
+                </VBox>
+
+                <!-- Loans -->
+                <VBox styleClass="service-card" onMouseClicked="#goLoans"
+                      GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label text="&#x1F3E6;" styleClass="card-icon"/>
+                    <Label text="Loans" styleClass="card-title"/>
+                    <Label text="Apply, simulate&#10;&amp; track loans"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Button text="Open &#x2192;" styleClass="card-btn"
+                            mnemonicParsing="false" onAction="#goLoans"/>
+                </VBox>
+
+                <!-- Statistics -->
+                <VBox styleClass="service-card service-card-disabled"
+                      GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label text="📊" styleClass="card-icon"/>
+                    <Label text="Statistics" styleClass="card-title"/>
+                    <Label text="Analytics &amp; financial&#10;reports"
+                           styleClass="card-desc" wrapText="true"/>
+                    <Label text="Coming soon" styleClass="card-soon"/>
+                </VBox>
+
+            </GridPane>
+        </VBox>
+    </center>
+
+</BorderPane>
+
+
+
+
+
