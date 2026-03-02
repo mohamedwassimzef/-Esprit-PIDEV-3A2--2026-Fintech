@@ -60,3 +60,17 @@ VALUES
   ('Premium Home Cover', 'home', 'Full protection for residential properties.',     'All-risk coverage up to 500000 TND.',              900.00, 1.80, 12, 1),
   ('Annual Car Plan',    'car',  'Annual plan with roadside assistance.',            'Roadside assistance and third-party up to 80000 TND.', 400.00, 1.20, 12, 1),
   ('Annual Home Plan',   'home', 'Annual home insurance with theft coverage.',      'Theft, fire and flood up to 250000 TND.',         600.00, 1.30, 12, 1);
+
+-- =============================================================
+-- Migration: add boldsign_document_id to contract_request
+-- Run this if the table already exists in your database.
+-- =============================================================
+ALTER TABLE `contract_request`
+  ADD COLUMN IF NOT EXISTS `boldsign_document_id` VARCHAR(255) DEFAULT NULL;
+
+-- =============================================================
+-- Note: the contract_request.status column accepts these values:
+--   PENDING | APPROVED | REJECTED | SIGNED
+-- No schema change is needed since it is stored as VARCHAR(20).
+-- =============================================================
+

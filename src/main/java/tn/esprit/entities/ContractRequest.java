@@ -13,6 +13,8 @@ public class ContractRequest {
     private double calculatedPremium;
     private RequestStatus status;
     private LocalDateTime createdAt;
+    private String boldSignDocumentId;   // BoldSign document ID, set after sending for signature
+
     public ContractRequest() {}
     public ContractRequest(int id, int userId, int assetId, int packageId,
                            double calculatedPremium, RequestStatus status, LocalDateTime createdAt) {
@@ -46,6 +48,8 @@ public class ContractRequest {
     public void setStatus(RequestStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getBoldSignDocumentId() { return boldSignDocumentId; }
+    public void setBoldSignDocumentId(String boldSignDocumentId) { this.boldSignDocumentId = boldSignDocumentId; }
     @Override
     public String toString() {
         return "ContractRequest{" +
@@ -56,6 +60,7 @@ public class ContractRequest {
                 ", calculatedPremium=" + calculatedPremium +
                 ", status=" + status +
                 ", createdAt=" + createdAt +
+                ", boldSignDocumentId='" + boldSignDocumentId + '\'' +
                 '}';
     }
 }

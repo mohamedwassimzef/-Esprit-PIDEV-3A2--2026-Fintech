@@ -85,6 +85,9 @@
                                         <Label fx:id="rejectedCountLabel"
                                                text="REJECTED: 0"
                                                style="-fx-text-fill:#cc2200;-fx-font-weight:800;-fx-font-size:11px;-fx-letter-spacing:1.0;-fx-padding:4 0 0 0;"/>
+                                        <Label fx:id="signedCountLabel"
+                                               text="SIGNED: 0"
+                                               style="-fx-text-fill:#00ccff;-fx-font-weight:800;-fx-font-size:11px;-fx-letter-spacing:1.0;-fx-padding:4 0 0 0;"/>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <ComboBox fx:id="requestStatusFilter" promptText="All Statuses"
                                                   onAction="#handleRequestStatusFilter" prefWidth="160.0"/>

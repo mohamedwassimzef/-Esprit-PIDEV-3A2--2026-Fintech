@@ -25,8 +25,9 @@ public class BoldSignService {
     // ----------------------------------------------------------------
     //  BoldSign API credentials  –  replace with your real key
     // ----------------------------------------------------------------
-    private static final String API_KEY  = "Njc5M2I1NzYtMjVmZC00ZGExLTlmODktZDgwMDBhOWQ4ZDAx";
-    private static final String BASE_URL = "https://api.boldsign.com";
+    private static final String API_KEY     = "Njc5M2I1NzYtMjVmZC00ZGExLTlmODktZDgwMDBhOWQ4ZDAx";
+    private static final String BASE_URL    = "https://api.boldsign.com";
+    private static final String WEBHOOK_URL = "https://iridaceous-misty-vivaciously.ngrok-free.dev/webhook/boldsign";
     // Template that PDFService will fill
     private static final String TEMPLATE_PATH = "contracts/contract.html";
     // ----------------------------------------------------------------
@@ -180,6 +181,14 @@ public class BoldSignService {
                 CRLF +
                 "true";
 
+        // ── Part 7 : Webhook URL ────────────────────────────────────
+        // BoldSign will POST document events (completed, declined) to this URL
+        String webhookUrlPart =
+                CRLF + "--" + boundary + CRLF +
+                "Content-Disposition: form-data; name=\"WebhookUrl\"" + CRLF +
+                CRLF +
+                WEBHOOK_URL;
+
         // ── Closing boundary ────────────────────────────────────────
         String closing = CRLF + "--" + boundary + "--";
 
@@ -197,6 +206,7 @@ public class BoldSignService {
                 fieldW.getBytes(),
                 fieldH.getBytes(),
                 fieldRequired.getBytes(),
+                webhookUrlPart.getBytes(),
                 closing.getBytes()
         );
 

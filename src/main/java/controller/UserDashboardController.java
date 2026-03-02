@@ -173,6 +173,7 @@ public class UserDashboardController {
                 switch (status) {
                     case APPROVED -> setStyle("-fx-text-fill:#44cc44;-fx-font-weight:700;");
                     case REJECTED -> setStyle("-fx-text-fill:#cc2200;-fx-font-weight:700;");
+                    case SIGNED   -> setStyle("-fx-text-fill:#00ccff;-fx-font-weight:700;");
                     default       -> setStyle("-fx-text-fill:#f5c800;-fx-font-weight:700;");
                 }
             }

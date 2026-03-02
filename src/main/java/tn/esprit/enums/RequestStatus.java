@@ -3,7 +3,8 @@ package tn.esprit.enums;
 public enum RequestStatus {
     PENDING,
     APPROVED,
-    REJECTED;
+    REJECTED,
+    SIGNED;
 
     // Convert DB string to enum
     public static RequestStatus fromString(String value) {

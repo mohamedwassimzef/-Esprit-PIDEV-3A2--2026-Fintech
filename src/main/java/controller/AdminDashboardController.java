@@ -10,10 +10,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import tn.esprit.dao.ContractRequestDAO;
 import tn.esprit.dao.InsurancePackageDAO;
 import tn.esprit.dao.InsuredAssetDAO;
+import tn.esprit.dao.UserDAO;
 import tn.esprit.entities.ContractRequest;
 import tn.esprit.entities.InsurancePackage;
 import tn.esprit.entities.InsuredAsset;
+import tn.esprit.entities.User;
 import tn.esprit.enums.RequestStatus;
+import tn.esprit.services.BoldSignService;
 import tn.esprit.services.SessionManager;
 import tn.esprit.services.PDFService;
 import java.time.LocalDateTime;
@@ -35,7 +38,7 @@ public class AdminDashboardController {
     @FXML private TableColumn<ContractRequest, RequestStatus> reqColStatus;
     @FXML private TableColumn<ContractRequest, LocalDateTime> reqColCreatedAt;
     @FXML private Button        approveBtn, rejectBtn;
-    @FXML private Label         pendingCountLabel, approvedCountLabel, rejectedCountLabel;
+    @FXML private Label         pendingCountLabel, approvedCountLabel, rejectedCountLabel, signedCountLabel;
     @FXML private ComboBox<String> requestStatusFilter;
 
     //    Manage Packages tab                                              
@@ -83,7 +86,7 @@ public class AdminDashboardController {
         setupAssetsTable();
 
         pkgAssetType.setItems(FXCollections.observableArrayList("car", "home", "land"));
-        requestStatusFilter.setItems(FXCollections.observableArrayList("ALL", "PENDING", "APPROVED", "REJECTED"));
+        requestStatusFilter.setItems(FXCollections.observableArrayList("ALL", "PENDING", "APPROVED", "REJECTED", "SIGNED"));
 
         applyInputControls();
         refreshRequestsTable();
@@ -116,6 +119,7 @@ public class AdminDashboardController {
                 switch (st) {
                     case APPROVED -> setStyle("-fx-text-fill:#44cc44;-fx-font-weight:700;");
                     case REJECTED -> setStyle("-fx-text-fill:#cc2200;-fx-font-weight:700;");
+                    case SIGNED   -> setStyle("-fx-text-fill:#00ccff;-fx-font-weight:700;");
                     default       -> setStyle("-fx-text-fill:#f5c800;-fx-font-weight:700;");
                 }
             }
@@ -218,9 +222,11 @@ public class AdminDashboardController {
         long pending  = all.stream().filter(r -> r.getStatus() == RequestStatus.PENDING).count();
         long approved = all.stream().filter(r -> r.getStatus() == RequestStatus.APPROVED).count();
         long rejected = all.stream().filter(r -> r.getStatus() == RequestStatus.REJECTED).count();
-        pendingCountLabel.setText("PENDING: " + pending);
+        long signed   = all.stream().filter(r -> r.getStatus() == RequestStatus.SIGNED).count();
+        pendingCountLabel.setText("PENDING: "  + pending);
         approvedCountLabel.setText("APPROVED: " + approved);
         rejectedCountLabel.setText("REJECTED: " + rejected);
+        if (signedCountLabel != null) signedCountLabel.setText("SIGNED: " + signed);
     }
 
     //                                                                     
@@ -229,15 +235,119 @@ public class AdminDashboardController {
     @FXML
     private void handleApproveRequest() {
         if (selectedRequest == null) return;
-        selectedRequest.setStatus(RequestStatus.APPROVED);
-        boolean ok = new ContractRequestDAO().update(selectedRequest);
-        showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR,
-                ok ? "Approved" : "Error",
-                ok ? "Request #" + selectedRequest.getId() + " has been APPROVED."
-                   : "Failed to approve request.");
 
+        // ── Snapshot the request immediately before any refresh clears selectedRequest ──
+        final ContractRequest req = selectedRequest;
 
-        if (ok) refreshRequestsTable();
+        // 1. Update status to APPROVED in DB
+        req.setStatus(RequestStatus.APPROVED);
+        final ContractRequestDAO dao = new ContractRequestDAO();
+        boolean ok = dao.update(req);
+
+        if (!ok) {
+            showAlert(AlertType.ERROR, "Error", "Failed to approve request.");
+            return;
+        }
+
+        // 2. Refresh UI immediately so admin can see APPROVED status
+        refreshRequestsTable();
+
+        showAlert(AlertType.INFORMATION, "Approved",
+                "Request #" + req.getId() + " approved.\nGenerating contract PDF and sending to user for signature...");
+
+        // 3. BoldSign integration — runs in background thread so UI stays responsive
+        Thread boldSignThread = new Thread(() -> {
+            try {
+                UserDAO             userDAO  = new UserDAO();
+                InsuredAssetDAO     assetDAO = new InsuredAssetDAO();
+                InsurancePackageDAO pkgDAO   = new InsurancePackageDAO();
+
+                User             user  = userDAO.read(req.getUserId());
+                InsuredAsset     asset = assetDAO.read(req.getAssetId());
+                InsurancePackage pkg   = pkgDAO.read(req.getPackageId());
+
+                if (user == null || asset == null || pkg == null) {
+                    System.out.println("[BoldSign] Could not load user/asset/package for request #" + req.getId()
+                            + "  user=" + user + "  asset=" + asset + "  pkg=" + pkg);
+                    Platform.runLater(() ->
+                        showAlert(AlertType.WARNING, "BoldSign Warning",
+                            "Contract approved but could not load linked data.\nBoldSign email was NOT sent.")
+                    );
+                    return;
+                }
+
+                String approvedValue = (asset.getApprovedValue() != null
+                        ? asset.getApprovedValue().toPlainString()
+                        : asset.getDeclaredValue().toPlainString()) + " TND";
+
+                String assetRef = (asset.getReference() != null && !asset.getReference().isBlank())
+                        ? asset.getReference()
+                        : "ASSET-" + asset.getId();
+
+                System.out.println("[BoldSign] Sending contract to " + user.getEmail()
+                        + "  asset=" + assetRef + "  pkg=" + pkg.getName()
+                        + "  value=" + approvedValue);
+
+                BoldSignService boldSign = new BoldSignService(
+                        user.getName(),
+                        assetRef,
+                        pkg.getName(),
+                        approvedValue,
+                        java.time.LocalDate.now(),
+                        user.getEmail()
+                );
+
+                // 4. Generate PDF + send to BoldSign → returns JSON with documentId
+                String response = boldSign.sendForSignature();
+                System.out.println("[BoldSign] Raw response: " + response);
+
+                // 5. Extract documentId from BoldSign JSON response
+                String documentId = extractDocumentId(response);
+                if (documentId != null && !documentId.isBlank()) {
+                    req.setBoldSignDocumentId(documentId);
+                    dao.update(req);
+                    System.out.println("[BoldSign] Document ID saved: " + documentId);
+                    Platform.runLater(() ->
+                        showAlert(AlertType.INFORMATION, "Contract Sent",
+                            "Contract sent to " + user.getEmail() + " for signature.\nDocument ID: " + documentId)
+                    );
+                } else {
+                    System.out.println("[BoldSign] Warning: no documentId in response: " + response);
+                    Platform.runLater(() ->
+                        showAlert(AlertType.WARNING, "BoldSign Warning",
+                            "Contract approved and email sent, but could not store document ID.\nResponse: " + response)
+                    );
+                }
+
+            } catch (Exception e) {
+                System.out.println("[BoldSign] Error sending contract: " + e.getMessage());
+                e.printStackTrace();
+                Platform.runLater(() ->
+                    showAlert(AlertType.ERROR, "BoldSign Error",
+                        "Contract approved but failed to send via BoldSign:\n" + e.getMessage())
+                );
+            }
+        }, "boldsign-thread");
+
+        boldSignThread.setDaemon(true);
+        boldSignThread.start();
+    }
+
+    /** Extracts the documentId value from a BoldSign JSON response string. */
+    private String extractDocumentId(String json) {
+        if (json == null || json.isBlank()) return null;
+        // BoldSign returns: {"documentId":"xxxx-xxxx-xxxx", ...}
+        String key = "\"documentId\"";
+        int idx = json.indexOf(key);
+        if (idx < 0) return null;
+        int colon = json.indexOf(':', idx + key.length());
+        if (colon < 0) return null;
+        int start = json.indexOf('"', colon + 1);
+        if (start < 0) return null;
+        int end = json.indexOf('"', start + 1);
+        if (end < 0) return null;
+        String id = json.substring(start + 1, end);
+        return id.isBlank() ? null : id;
     }
 
     @FXML

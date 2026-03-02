@@ -33,5 +33,7 @@ public class MyDB {
         return conx;
     }
 
-
+    public String getUsername() { return USERNAME; }
+    public String getPassword()  { return PWD; }
+    public String getUrl()       { return URL; }
 }

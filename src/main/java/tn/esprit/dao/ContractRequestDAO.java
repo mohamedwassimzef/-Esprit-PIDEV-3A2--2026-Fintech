@@ -63,14 +63,15 @@ public class ContractRequestDAO implements CrudInterface<ContractRequest> {
     @Override
     public boolean update(ContractRequest entity) {
         String query = "UPDATE contract_request SET user_id = ?, asset_id = ?, package_id = ?, " +
-                "calculated_premium = ?, status = ? WHERE id = ?";
+                "calculated_premium = ?, status = ?, boldsign_document_id = ? WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, entity.getUserId());
             pstmt.setInt(2, entity.getAssetId());
             pstmt.setInt(3, entity.getPackageId());
             pstmt.setDouble(4, entity.getCalculatedPremium());
             pstmt.setString(5, entity.getStatus() != null ? entity.getStatus().toDbValue() : RequestStatus.PENDING.toDbValue());
-            pstmt.setInt(6, entity.getId());
+            pstmt.setString(6, entity.getBoldSignDocumentId());
+            pstmt.setInt(7, entity.getId());
             int rowsUpdated = pstmt.executeUpdate();
             return rowsUpdated > 0;
         } catch (SQLException e) {
@@ -147,6 +148,54 @@ public class ContractRequestDAO implements CrudInterface<ContractRequest> {
         }
         return requests;
     }
+    /**
+     * Find a contract request by its BoldSign document ID.
+     * Used by the webhook to resolve which request was signed.
+     * Opens a fresh connection to be thread-safe (webhook runs on Spring thread).
+     */
+    public ContractRequest findByBoldSignDocumentId(String documentId) {
+        String query = "SELECT * FROM contract_request WHERE boldsign_document_id = ?";
+        try (Connection conn = openFreshConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, documentId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return mapResultSetToEntity(rs);
+        } catch (SQLException e) {
+            System.out.println("Error finding ContractRequest by BoldSign document ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Updates only the status column for the given contract request ID.
+     * Used by the webhook — opens a fresh connection to be thread-safe.
+     *
+     * @param requestId the contract_request.id to update
+     * @param status    the new status value
+     * @return true if the row was updated
+     */
+    public boolean updateStatus(int requestId, RequestStatus status) {
+        String query = "UPDATE contract_request SET status = ? WHERE id = ?";
+        try (Connection conn = openFreshConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, status.toDbValue());
+            pstmt.setInt(2, requestId);
+            int rows = pstmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating ContractRequest status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Opens a brand-new JDBC connection using the same credentials as MyDB. */
+    private Connection openFreshConnection() throws SQLException {
+        MyDB db = MyDB.getInstance();
+        return java.sql.DriverManager.getConnection(
+                db.getUrl(), db.getUsername(), db.getPassword()
+        );
+    }
+
     private ContractRequest mapResultSetToEntity(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         int userId = rs.getInt("user_id");
@@ -157,6 +206,8 @@ public class ContractRequestDAO implements CrudInterface<ContractRequest> {
         RequestStatus status = statusStr != null ? RequestStatus.fromString(statusStr) : RequestStatus.PENDING;
         Timestamp ts = rs.getTimestamp("created_at");
         LocalDateTime createdAt = ts != null ? ts.toLocalDateTime() : null;
-        return new ContractRequest(id, userId, assetId, packageId, calculatedPremium, status, createdAt);
+        ContractRequest req = new ContractRequest(id, userId, assetId, packageId, calculatedPremium, status, createdAt);
+        req.setBoldSignDocumentId(rs.getString("boldsign_document_id"));
+        return req;
     }
 }
