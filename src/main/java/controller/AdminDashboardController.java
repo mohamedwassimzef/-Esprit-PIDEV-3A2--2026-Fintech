@@ -10,10 +10,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import tn.esprit.dao.ContractRequestDAO;
 import tn.esprit.dao.InsurancePackageDAO;
 import tn.esprit.dao.InsuredAssetDAO;
+import tn.esprit.dao.RoleDAO;
 import tn.esprit.dao.UserDAO;
 import tn.esprit.entities.ContractRequest;
 import tn.esprit.entities.InsurancePackage;
 import tn.esprit.entities.InsuredAsset;
+import tn.esprit.entities.Role;
 import tn.esprit.entities.User;
 import tn.esprit.enums.RequestStatus;
 import tn.esprit.services.BoldSignService;
@@ -61,16 +63,29 @@ public class AdminDashboardController {
     @FXML private TableColumn<InsuredAsset, String>         aColName, aColType, aColDescription, aColLocation;
     @FXML private TableColumn<InsuredAsset, Double>         aColValue;
 
+    //    Manage Roles tab
+    @FXML private TableView<Role>              rolesTable;
+    @FXML private TableColumn<Role, Integer>   roleColId;
+    @FXML private TableColumn<Role, String>    roleColName, roleColPermissions;
+    @FXML private TextField  roleName;
+    @FXML private CheckBox   permInsurance, permPersonalFinance, permLoans,
+                             permTransactions, permComplaints, permAdmin;
+    @FXML private Button     roleSubmitBtn, roleEditBtn, roleDeleteBtn;
+    @FXML private Label      roleFormTitle;
+
     @FXML private Label welcomeLabel;
 
-    //    Observable lists                                                 
+    //    Observable lists
     private final ObservableList<ContractRequest>  requests = FXCollections.observableArrayList();
     private final ObservableList<InsurancePackage> packages = FXCollections.observableArrayList();
     private final ObservableList<InsuredAsset>     assets   = FXCollections.observableArrayList();
+    private final ObservableList<Role>             roles    = FXCollections.observableArrayList();
 
     private ContractRequest  selectedRequest;
     private InsurancePackage selectedPackage;
-    private boolean pkgEditMode = false;
+    private Role             selectedRole;
+    private boolean pkgEditMode  = false;
+    private boolean roleEditMode = false;
 
     //                                                                     
     //  INIT
@@ -84,6 +99,7 @@ public class AdminDashboardController {
         setupRequestsTable();
         setupPackagesTable();
         setupAssetsTable();
+        setupRolesTable();
 
         pkgAssetType.setItems(FXCollections.observableArrayList("car", "home", "land"));
         requestStatusFilter.setItems(FXCollections.observableArrayList("ALL", "PENDING", "APPROVED", "REJECTED", "SIGNED"));
@@ -92,6 +108,7 @@ public class AdminDashboardController {
         refreshRequestsTable();
         refreshPackagesTable();
         refreshAssetsTable();
+        refreshRolesTable();
 
         setPkgEditMode(false);
     }
@@ -231,7 +248,7 @@ public class AdminDashboardController {
 
     //                                                                     
     //  TAB 1   APPROVE / REJECT
-    //                                                                     
+    //
     @FXML
     private void handleApproveRequest() {
         if (selectedRequest == null) return;
@@ -374,9 +391,9 @@ public class AdminDashboardController {
         rejectBtn.setDisable(true);
     }
 
-    //                                                                     
+    //
     //  TAB 2   MANAGE PACKAGES
-    //                                                                     
+    //
     private void setPkgEditMode(boolean edit) {
         pkgEditMode = edit;
         pkgSubmitBtn.setText(edit ? "Update Package" : "Add Package");
@@ -484,7 +501,156 @@ public class AdminDashboardController {
         f.setTextFormatter(new TextFormatter<>(filter));
     }
 
-    //                                                                     
+    //
+    //  TAB 4 – MANAGE ROLES
+    //
+    private void setupRolesTable() {
+        roleColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        roleColName.setCellValueFactory(new PropertyValueFactory<>("roleName"));
+        roleColPermissions.setCellValueFactory(new PropertyValueFactory<>("permissions"));
+
+        rolesTable.setItems(roles);
+        roleEditBtn.setDisable(true);
+        roleDeleteBtn.setDisable(true);
+
+        rolesTable.setRowFactory(tv -> {
+            TableRow<Role> row = new TableRow<>();
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && !row.isEmpty()) {
+                    selectedRole = row.getItem();
+                    roleEditBtn.setDisable(false);
+                    roleDeleteBtn.setDisable(false);
+                }
+            });
+            return row;
+        });
+    }
+
+    private void refreshRolesTable() {
+        roles.setAll(new RoleDAO().readAll());
+        selectedRole = null;
+        roleEditBtn.setDisable(true);
+        roleDeleteBtn.setDisable(true);
+    }
+
+    /** Build a comma-separated permissions string from checkbox state. */
+    private String buildPermissionsJson() {
+        java.util.List<String> perms = new java.util.ArrayList<>();
+        if (permInsurance.isSelected())      perms.add("insurance");
+        if (permPersonalFinance.isSelected()) perms.add("personal_finance");
+        if (permLoans.isSelected())          perms.add("loans");
+        if (permTransactions.isSelected())   perms.add("transactions");
+        if (permComplaints.isSelected())     perms.add("complaints");
+        if (permAdmin.isSelected())          perms.add("admin");
+        return String.join(",", perms);
+    }
+
+    /** Restore checkbox state from a stored permissions string. */
+    private void applyPermissionsToCheckboxes(String permissions) {
+        if (permissions == null) permissions = "";
+        permInsurance.setSelected(permissions.contains("insurance"));
+        permPersonalFinance.setSelected(permissions.contains("personal_finance"));
+        permLoans.setSelected(permissions.contains("loans"));
+        permTransactions.setSelected(permissions.contains("transactions"));
+        permComplaints.setSelected(permissions.contains("complaints"));
+        permAdmin.setSelected(permissions.contains("admin"));
+    }
+
+    @FXML
+    private void handleRoleSubmit() {
+        String name = roleName.getText().trim();
+        if (name.isEmpty()) {
+            showAlert(AlertType.WARNING, "Validation", "Role name is required.");
+            return;
+        }
+
+        String permissions = buildPermissionsJson();
+        RoleDAO dao = new RoleDAO();
+        boolean ok;
+
+        if (roleEditMode && selectedRole != null) {
+            selectedRole.setRoleName(name);
+            selectedRole.setPermissions(permissions);
+            ok = dao.update(selectedRole);
+            showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR,
+                    ok ? "Updated" : "Error",
+                    ok ? "Role \"" + name + "\" updated." : "Update failed.");
+        } else {
+            // Prevent duplicate role names
+            boolean exists = new RoleDAO().readAll().stream()
+                    .anyMatch(r -> r.getRoleName().equalsIgnoreCase(name));
+            if (exists) {
+                showAlert(AlertType.WARNING, "Duplicate", "A role named \"" + name + "\" already exists.");
+                return;
+            }
+            Role newRole = new Role(name, permissions);
+            ok = dao.create(newRole);
+            showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR,
+                    ok ? "Created" : "Error",
+                    ok ? "Role \"" + name + "\" added." : "Failed to add role.");
+        }
+
+        if (ok) {
+            clearRoleForm();
+            refreshRolesTable();
+        }
+    }
+
+    @FXML
+    private void handleRoleEdit() {
+        if (selectedRole == null) {
+            showAlert(AlertType.WARNING, "No Selection", "Double-click a role to edit it.");
+            return;
+        }
+        roleEditMode = true;
+        roleFormTitle.setText("EDIT ROLE");
+        roleSubmitBtn.setText("Update Role");
+        roleName.setText(selectedRole.getRoleName());
+        applyPermissionsToCheckboxes(selectedRole.getPermissions());
+    }
+
+    @FXML
+    private void handleRoleDelete() {
+        if (selectedRole == null) {
+            showAlert(AlertType.WARNING, "No Selection", "Double-click a role to delete it.");
+            return;
+        }
+        Alert confirm = new Alert(AlertType.CONFIRMATION,
+                "Delete role \"" + selectedRole.getRoleName() + "\"?\nUsers with this role will be unaffected but the role will be removed.",
+                ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Confirm Delete");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                boolean ok = new RoleDAO().delete(selectedRole.getId());
+                showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR,
+                        ok ? "Deleted" : "Error",
+                        ok ? "Role deleted." : "Delete failed (role may be in use by users).");
+                if (ok) { clearRoleForm(); refreshRolesTable(); }
+            }
+        });
+    }
+
+    @FXML
+    private void handleRoleClear() { clearRoleForm(); }
+
+    private void clearRoleForm() {
+        roleName.clear();
+        permInsurance.setSelected(false);
+        permPersonalFinance.setSelected(false);
+        permLoans.setSelected(false);
+        permTransactions.setSelected(false);
+        permComplaints.setSelected(false);
+        permAdmin.setSelected(false);
+        roleEditMode = false;
+        selectedRole = null;
+        roleFormTitle.setText("ADD NEW ROLE");
+        roleSubmitBtn.setText("Add Role");
+        roleEditBtn.setDisable(true);
+        roleDeleteBtn.setDisable(true);
+        rolesTable.getSelectionModel().clearSelection();
+    }
+
+    //
     //  NAVIGATION
     //                                                                     
     @FXML private void handleLogout() { SessionManager.getInstance().logout(); SceneManager.switchScene("/View/Login.fxml","Login"); }

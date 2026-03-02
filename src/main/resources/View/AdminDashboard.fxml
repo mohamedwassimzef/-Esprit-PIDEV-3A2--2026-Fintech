@@ -271,6 +271,95 @@
                     </content>
                 </Tab>
 
+                <!-- ═══════════════════════════════════════════════
+                     TAB 4 – MANAGE ROLES
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Manage Roles">
+                    <content>
+                        <HBox spacing="0.0">
+
+                            <!-- LEFT: role form -->
+                            <ScrollPane prefWidth="360.0" minWidth="360.0" maxWidth="360.0"
+                                        fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                        style="-fx-background:transparent;-fx-background-color:transparent;-fx-border-color:transparent;">
+                                <content>
+                                    <VBox styleClass="form-container" spacing="2.0"
+                                          style="-fx-padding:24 24 24 24;">
+                                        <children>
+                                            <Label fx:id="roleFormTitle" text="ADD NEW ROLE"
+                                                   style="-fx-text-fill:#f5c800;-fx-font-size:14px;-fx-font-weight:900;-fx-padding:0 0 10 0;"/>
+
+                                            <Label text="ROLE NAME"/>
+                                            <TextField fx:id="roleName" promptText="e.g. Manager"/>
+
+                                            <Label text="PERMISSIONS"/>
+                                            <Label text="Select the permissions for this role:"
+                                                   style="-fx-text-fill:#888;-fx-font-size:10px;-fx-padding:0 0 4 0;"/>
+
+                                            <CheckBox fx:id="permInsurance"      text="Insurance" style="-fx-text-fill:#e0e0e0;"/>
+                                            <CheckBox fx:id="permPersonalFinance" text="Personal Finance" style="-fx-text-fill:#e0e0e0;"/>
+                                            <CheckBox fx:id="permLoans"          text="Loans" style="-fx-text-fill:#e0e0e0;"/>
+                                            <CheckBox fx:id="permTransactions"   text="Transactions" style="-fx-text-fill:#e0e0e0;"/>
+                                            <CheckBox fx:id="permComplaints"     text="Complaints" style="-fx-text-fill:#e0e0e0;"/>
+                                            <CheckBox fx:id="permAdmin"          text="Admin Panel" style="-fx-text-fill:#e0e0e0;"/>
+
+                                            <Region prefHeight="12.0"/>
+
+                                            <Button fx:id="roleSubmitBtn" text="Add Role"
+                                                    mnemonicParsing="false"
+                                                    onAction="#handleRoleSubmit"
+                                                    maxWidth="Infinity"/>
+                                            <Button text="Clear Form"
+                                                    mnemonicParsing="false"
+                                                    onAction="#handleRoleClear"
+                                                    maxWidth="Infinity"
+                                                    style="-fx-background-color:transparent;-fx-border-color:#f5c800;-fx-text-fill:#f5c800;-fx-border-width:1;"/>
+                                        </children>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+
+                            <!-- RIGHT: roles table -->
+                            <AnchorPane HBox.hgrow="ALWAYS">
+                                <children>
+                                    <TableView fx:id="rolesTable"
+                                               AnchorPane.topAnchor="16.0"
+                                               AnchorPane.leftAnchor="12.0"
+                                               AnchorPane.rightAnchor="12.0"
+                                               AnchorPane.bottomAnchor="60.0">
+                                        <columns>
+                                            <TableColumn fx:id="roleColId"          text="ID"          prefWidth="50.0"/>
+                                            <TableColumn fx:id="roleColName"        text="Role Name"   prefWidth="180.0"/>
+                                            <TableColumn fx:id="roleColPermissions" text="Permissions" prefWidth="300.0"/>
+                                        </columns>
+                                        <columnResizePolicy>
+                                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                        </columnResizePolicy>
+                                    </TableView>
+
+                                    <HBox spacing="12.0"
+                                          AnchorPane.bottomAnchor="12.0"
+                                          AnchorPane.leftAnchor="12.0"
+                                          AnchorPane.rightAnchor="12.0">
+                                        <children>
+                                            <Button fx:id="roleEditBtn" text="Edit Selected"
+                                                    disable="true" mnemonicParsing="false"
+                                                    onAction="#handleRoleEdit"
+                                                    prefWidth="180.0"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Button fx:id="roleDeleteBtn" text="Delete Selected"
+                                                    disable="true" mnemonicParsing="false"
+                                                    onAction="#handleRoleDelete"
+                                                    prefWidth="180.0"/>
+                                        </children>
+                                    </HBox>
+                                </children>
+                            </AnchorPane>
+
+                        </HBox>
+                    </content>
+                </Tab>
+
             </tabs>
         </TabPane>
 

@@ -78,15 +78,7 @@
                             mnemonicParsing="false" onAction="#goTransactions"/>
                 </VBox>
 
-                <!-- Complaints -->
-                <VBox styleClass="service-card service-card-disabled"
-                      GridPane.columnIndex="0" GridPane.rowIndex="1">
-                    <Label text="📋" styleClass="card-icon"/>
-                    <Label text="Complaints" styleClass="card-title"/>
-                    <Label text="Submit &amp; track&#10;support requests"
-                           styleClass="card-desc" wrapText="true"/>
-                    <Label text="Coming soon" styleClass="card-soon"/>
-                </VBox>
+
 
                 <!-- Loans -->
                 <VBox styleClass="service-card" onMouseClicked="#goLoans"
@@ -99,15 +91,7 @@
                             mnemonicParsing="false" onAction="#goLoans"/>
                 </VBox>
 
-                <!-- Statistics -->
-                <VBox styleClass="service-card service-card-disabled"
-                      GridPane.columnIndex="2" GridPane.rowIndex="1">
-                    <Label text="📊" styleClass="card-icon"/>
-                    <Label text="Statistics" styleClass="card-title"/>
-                    <Label text="Analytics &amp; financial&#10;reports"
-                           styleClass="card-desc" wrapText="true"/>
-                    <Label text="Coming soon" styleClass="card-soon"/>
-                </VBox>
+
 
             </GridPane>
         </VBox>
