@@ -2,6 +2,7 @@ package tn.esprit.services;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import tn.esprit.utils.WeatherResponse;
 
 /**
  * Simple integration-style test for the Weather API wrapper.
@@ -17,17 +18,15 @@ public class WeatherTest {
         double lat = 36.8065;
         double lon = 10.1815;
 
-        String json = Weather.getWeather(lat, lon);
+        WeatherResponse response = Weather.getWeather(lat, lon);
 
         // Basic checks
-        Assertions.assertNotNull(json, "Weather JSON should not be null");
-        Assertions.assertFalse(json.isEmpty(), "Weather JSON should not be empty");
-
-        // Open-Meteo current weather responses should contain these keys
-        Assertions.assertTrue(json.contains("\"current\""),
-                "JSON should contain a 'current' section");
-        Assertions.assertTrue(json.contains("temperature"),
-                "JSON should contain temperature information");
+        Assertions.assertNotNull(response, "Weather response should not be null");
+        Assertions.assertNotNull(response.getCurrent(), "Current weather section should not be null");
+        // Temperature should be in a realistic range
+        Assertions.assertTrue(response.getCurrent().getTemperature_2m() >= -100.0
+                && response.getCurrent().getTemperature_2m() <= 60.0,
+                "Temperature should be in a realistic range");
     }
 }
 

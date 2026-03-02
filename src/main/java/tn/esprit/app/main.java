@@ -4,35 +4,65 @@ import tn.esprit.dao.InsuredAssetDAO;
 import tn.esprit.dao.InsuredContractDAO;
 import tn.esprit.entities.InsuredContract;
 import tn.esprit.enums.ContractStatus;
-import tn.esprit.services.RiskService;
 import tn.esprit.services.Weather;
-import tn.esprit.services.GeoLocation;
+import tn.esprit.utils.MyDB;
+import tn.esprit.utils.WeatherResponse;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import tn.esprit.DTO.ClimateRiskData;
-import tn.esprit.services.WeatherRiskService;
-import java.io.*;
-import java.net.*;
-import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception{
-        System.out.println("hello3");
+    public static void main(String[] args) {
+        System.out.println("hello");
 
         // Test Weather API: Tunis coordinates
+        try {
+            double lat = 36.8065;
+            double lon = 10.1815;
+            WeatherResponse weather = Weather.getWeather(lat, lon);
+            System.out.println("Weather API response for Tunis (" + lat + ", " + lon + "):");
+            if (weather != null && weather.getCurrent() != null) {
+                System.out.println("  Temperature : " + weather.getCurrent().getTemperature_2m() + " °C");
+                System.out.println("  Precipitation: " + weather.getCurrent().getPrecipitation() + " mm");
+                System.out.println("  Wind speed  : " + weather.getCurrent().getWind_speed_10m() + " km/h");
+            } else {
+                System.out.println("  (no current data returned)");
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to call Weather API: " + e.getMessage());
+        }
 
+        // Guard: skip all DB operations if connection is unavailable
+        if (MyDB.getInstance().getConx() == null) {
+            System.out.println("Database not available – skipping DB operations.");
+            return;
+        }
 
-        GeoLocation GeoLocation = new GeoLocation();
-        double[] coords = GeoLocation.getCoordinates("Tunis", "Marsa");
-        System.out.println("Latitude: " + coords[0]);
-        System.out.println("Longitude: " + coords[1]);
+        InsuredAssetDAO insuredAssetDAO = new InsuredAssetDAO();
+        InsuredContractDAO insuredContractDAO = new InsuredContractDAO();
 
+        System.out.println("\nAll Insured Assets:");
+        System.out.println(insuredAssetDAO.readAll());
 
-        WeatherRiskService service = new WeatherRiskService();
+        InsuredContract insuredContract = new InsuredContract(
+                1,
+                "IC-2026-" + System.currentTimeMillis(),
+                29,
+                127,
+                LocalDate.of(2026, 2, 8),
+                LocalDate.of(2027, 2, 8),
+                1000.0,
+                50000.0,
+                ContractStatus.ACTIVE,
+                LocalDateTime.now(),
+                null
+        );
 
-        // Example: Tunis coordinates
-        ClimateRiskData data = service.getClimateAverages(coords[0], coords[1]);
-        System.out.println(data);
+        Boolean created = insuredContractDAO.create(insuredContract);
+        System.out.println("\nInsured Contract created: " + created);
+
+        System.out.println("\nAll Insured Contracts:");
+        System.out.println(insuredContractDAO.readAll());
     }
 }

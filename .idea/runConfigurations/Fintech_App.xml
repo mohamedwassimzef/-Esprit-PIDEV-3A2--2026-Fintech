@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Fintech App" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="Main" />
+    <option name="VM_PARAMETERS"
+            value="--module-path $PROJECT_DIR$/lib/openjfx-17.0.18_windows-x64_bin-sdk/javafx-sdk-17.0.18/lib --add-modules javafx.controls,javafx.fxml" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <module name="untitled" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
+

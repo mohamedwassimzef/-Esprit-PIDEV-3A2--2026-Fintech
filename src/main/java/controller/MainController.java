@@ -24,6 +24,7 @@ import tn.esprit.entities.InsuredContract;
 import tn.esprit.entities.User;
 import tn.esprit.enums.ContractStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -42,9 +43,6 @@ public class MainController {
 
     @FXML
     private TextField AssType;
-
-    @FXML
-    private TextField AssValue;
 
     @FXML
     private TextField AssDesc;
@@ -76,9 +74,6 @@ public class MainController {
 
     @FXML
     private TableColumn<InsuredAsset, String> colType;
-
-    @FXML
-    private TableColumn<InsuredAsset, Double> colValue;
 
     @FXML
     private TableColumn<InsuredAsset, String> colDescription;
@@ -202,9 +197,8 @@ public class MainController {
     private void initialize() {
         // Wire table columns to entity properties.
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("reference"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        colValue.setCellValueFactory(new PropertyValueFactory<>("value"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
         colLocation.setCellValueFactory(new PropertyValueFactory<>("location"));
@@ -416,9 +410,8 @@ public class MainController {
             return;
         }
 
-        AssName.setText(selectedAsset.getName());
+        AssName.setText(selectedAsset.getReference());
         AssType.setText(selectedAsset.getType());
-        AssValue.setText(String.valueOf(selectedAsset.getValue()));
         AssDesc.setText(selectedAsset.getDescription());
         AssUser.setText(String.valueOf(selectedAsset.getUserId()));
 
@@ -479,54 +472,33 @@ public class MainController {
             // Get form values
             String name = AssName.getText().trim();
             String type = AssType.getText().trim();
-            String value = AssValue.getText().trim();
             String description = AssDesc.getText().trim();
             String userId = AssUser.getText().trim();
-
-            // Build location from city + area selectors
             String location = buildLocationFromSelection();
 
-            // Validate required fields
-            if (name.isEmpty() || type.isEmpty() || value.isEmpty() || userId.isEmpty() || location == null) {
+            if (name.isEmpty() || type.isEmpty() || userId.isEmpty() || location == null) {
                 showAlert(AlertType.ERROR, "Validation Error",
-                         "Please fill in all required fields (Name, Type, Value, City, User ID). Area is optional.");
+                         "Please fill in all required fields (Reference, Type, City, User ID).");
                 return;
             }
 
-            // Parse numeric values
-            double assetValue;
             int userIdInt;
-
-            try {
-                assetValue = Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                showAlert(AlertType.ERROR, "Validation Error",
-                         "Value must be a valid number");
-                return;
-            }
-
             try {
                 userIdInt = Integer.parseInt(userId);
             } catch (NumberFormatException e) {
-                showAlert(AlertType.ERROR, "Validation Error",
-                         "User ID must be a valid integer");
+                showAlert(AlertType.ERROR, "Validation Error", "User ID must be a valid integer");
                 return;
             }
 
-            // Verify user exists
             UserDAO userDAO = new UserDAO();
             User user = userDAO.read(userIdInt);
-
             if (user == null) {
                 showAlert(AlertType.ERROR, "User Not Found",
-                         "User with ID " + userIdInt + " does not exist in the database.\n" +
-                         "Please enter a valid User ID or create a new user first.");
-                System.out.println("ERROR: User ID " + userIdInt + " not found in database");
+                         "User with ID " + userIdInt + " does not exist in the database.");
                 return;
             }
 
             LocalDate createdDate = AssCreated.getValue();
-
             InsuredAssetDAO assetDAO = new InsuredAssetDAO();
             boolean success;
 
@@ -535,56 +507,29 @@ public class MainController {
                     showAlert(AlertType.WARNING, "No Selection", "Please double-click an asset first.");
                     return;
                 }
-
                 InsuredAsset asset = new InsuredAsset(
-                    selectedAsset.getId(),
-                    name,
-                    type,
-                    assetValue,
-                    description,
-                    selectedAsset.getCreatedAt(),
-                    location,
-                    userIdInt
+                    selectedAsset.getId(), name, type, description,
+                    selectedAsset.getCreatedAt(), location, userIdInt,
+                    selectedAsset.getDeclaredValue(),
+                    selectedAsset.getApprovedValue(),
+                    selectedAsset.getManufactureDate()
                 );
-
-                if (createdDate != null) {
-                    asset.setCreatedAt(createdDate.atStartOfDay());
-                }
-
+                if (createdDate != null) asset.setCreatedAt(createdDate.atStartOfDay());
                 success = assetDAO.update(asset);
-
-                if (success) {
-                    showAlert(AlertType.INFORMATION, "Updated", "Insured Asset updated successfully!");
-                    System.out.println("Asset updated successfully: " + asset);
-                } else {
-                    showAlert(AlertType.ERROR, "Update Failed", "Failed to update Insured Asset.");
-                    System.out.println("Failed to update asset: " + asset);
-                }
+                showAlert(success ? AlertType.INFORMATION : AlertType.ERROR,
+                        success ? "Updated" : "Update Failed",
+                        success ? "Insured Asset updated successfully!" : "Failed to update Insured Asset.");
             } else {
                 InsuredAsset asset = new InsuredAsset(
-                    name,
-                    type,
-                    assetValue,
-                    description,
-                    location,
-                    userIdInt
+                    name, type, description, location, userIdInt,
+                    BigDecimal.ZERO,
+                    createdDate != null ? createdDate : java.time.LocalDate.now()
                 );
-
-                if (createdDate != null) {
-                    asset.setCreatedAt(createdDate.atStartOfDay());
-                }
-
+                if (createdDate != null) asset.setCreatedAt(createdDate.atStartOfDay());
                 success = assetDAO.create(asset);
-
-                if (success) {
-                    showAlert(AlertType.INFORMATION, "Success",
-                             "Insured Asset created successfully!");
-                    System.out.println("Asset created successfully: " + asset);
-                } else {
-                    showAlert(AlertType.ERROR, "Database Error",
-                             "Failed to create Insured Asset. Please check the console for details.");
-                    System.out.println("Failed to create asset: " + asset);
-                }
+                showAlert(success ? AlertType.INFORMATION : AlertType.ERROR,
+                        success ? "Success" : "Database Error",
+                        success ? "Insured Asset created successfully!" : "Failed to create Insured Asset.");
             }
 
             if (success) {
@@ -787,7 +732,6 @@ public class MainController {
     private void clearForm() {
         AssName.clear();
         AssType.clear();
-        AssValue.clear();
         AssDesc.clear();
         AssUser.clear();
         AssCreated.setValue(null);
@@ -815,7 +759,6 @@ public class MainController {
 
     private void applyInputControls() {
         // Asset fields
-        applyDecimalOnly(AssValue);
         applyIntegerOnly(AssUser);
 
         // Contract fields

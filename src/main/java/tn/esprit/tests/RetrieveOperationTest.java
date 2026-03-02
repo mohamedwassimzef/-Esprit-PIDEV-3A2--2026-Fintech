@@ -321,9 +321,9 @@ public class RetrieveOperationTest {
             System.out.println("\nInsured Assets List:");
             for (int i = 0; i < Math.min(5, allAssets.size()); i++) {
                 System.out.println("  [" + (i + 1) + "] ID: " + allAssets.get(i).getId() +
-                                   " | Name: " + allAssets.get(i).getName() +
+                                   " | Reference: " + allAssets.get(i).getReference() +
                                    " | Type: " + allAssets.get(i).getType() +
-                                   " | Value: " + allAssets.get(i).getValue());
+                                   " | DeclaredValue: " + allAssets.get(i).getDeclaredValue());
             }
             if (allAssets.size() > 5) {
                 System.out.println("  ... and " + (allAssets.size() - 5) + " more assets");

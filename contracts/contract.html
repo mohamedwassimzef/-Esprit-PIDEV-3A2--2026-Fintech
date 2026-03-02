@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            margin: 40px; 
+            color: #333;
+            line-height: 1.5;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            color: #2E86C1;
+            margin: 0;
+        }
+        .contract-info {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .contract-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .contract-info th, .contract-info td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        .contract-info th {
+            background-color: #e8f0fe;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #2E86C1;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #2E86C1;
+        }
+        .terms p {
+            margin-bottom: 10px;
+        }
+        .signature {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature div {
+            width: 45%;
+            text-align: center;
+        }
+        footer {
+            text-align: center; 
+            font-size: 12px; 
+            margin-top: 50px; 
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Insurance Contract</h1>
+    </header>
+
+    <div class="contract-info">
+        <table>
+            <tr>
+                <th>User</th>
+                <td>{{userName}}</td>
+            </tr>
+            <tr>
+                <th>Asset</th>
+                <td>{{assetReference}}</td>
+            </tr>
+            <tr>
+                <th>Insurance Package</th>
+                <td>{{packageName}}</td>
+            </tr>
+            <tr>
+                <th>Approved Value</th>
+                <td>{{approvedValue}}</td>
+            </tr>
+            <tr>
+                <th>Contract Date</th>
+                <td>{{contractDate}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section terms">
+        <h2>Terms and Conditions</h2>
+        <p>{{termsParagraph}}</p>
+    </div>
+
+    <div class="signature">
+        <div>
+            <p>________________________</p>
+        </div>
+        <div>
+            <p>________________________</p>
+            <p>Insurance Company Representative</p>
+        </div>
+    </div>
+
+    <footer>
+        This is a digitally generated document. Signature to be completed via BoldSign.
+    </footer>
+</body>
+</html>

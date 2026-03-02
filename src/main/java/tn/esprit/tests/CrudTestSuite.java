@@ -29,6 +29,8 @@ public class CrudTestSuite {
         testComplaintCrud();
         testInsuredAssetCrud();
         testInsuredContractCrud();
+        testInsurancePackageCrud();
+        testContractRequestCrud();
 
         System.out.println("\n" + "=".repeat(100));
         System.out.println("ALL CRUD TESTS COMPLETED SUCCESSFULLY");
@@ -438,12 +440,15 @@ public class CrudTestSuite {
         // CREATE
         System.out.println("\n[CREATE TEST]");
         System.out.println("Creating 3 insured assets...");
-        InsuredAsset asset1 = new InsuredAsset("Tesla Model 3", "Vehicle", 45000.0,
-                "Electric car for personal use", "Garage A", 1);
-        InsuredAsset asset2 = new InsuredAsset("Home Building", "Real Estate", 200000.0,
-                "Residential property", "Downtown", 1);
-        InsuredAsset asset3 = new InsuredAsset("Diamond Necklace", "Jewelry", 5000.0,
-                "18K gold with diamonds", "Safe Box", 1);
+        InsuredAsset asset1 = new InsuredAsset("Tesla Model 3", "Vehicle",
+                "Electric car for personal use",
+                "Garage A", 1, new java.math.BigDecimal("45000.00"), java.time.LocalDate.of(2021,1,1));
+        InsuredAsset asset2 = new InsuredAsset("Home Building", "Real Estate",
+                "Residential property",
+                "Downtown", 1, new java.math.BigDecimal("200000.00"), java.time.LocalDate.of(2010,6,15));
+        InsuredAsset asset3 = new InsuredAsset("Diamond Necklace", "Jewelry",
+                "18K gold with diamonds",
+                "Safe Box", 1, new java.math.BigDecimal("5000.00"), java.time.LocalDate.of(2020,3,10));
 
         boolean c1 = assetDAO.create(asset1);
         boolean c2 = assetDAO.create(asset2);
@@ -467,8 +472,8 @@ public class CrudTestSuite {
 
             // UPDATE
             System.out.println("\n[UPDATE TEST]");
-            allAssets.get(0).setName("Tesla Model 3 Updated");
-            allAssets.get(0).setValue(48000.0);
+            allAssets.get(0).setReference("Tesla Model 3 Updated");
+            allAssets.get(0).setDeclaredValue(new java.math.BigDecimal("48000.00"));
             boolean updated = assetDAO.update(allAssets.get(0));
             System.out.println("  Update result: " + (updated ? "OK SUCCESS" : "FAIL FAILED"));
 
@@ -488,13 +493,183 @@ public class CrudTestSuite {
         System.out.println("|" + " ".repeat(27) + "INSURED CONTRACT ENTITY CRUD TESTS" + " ".repeat(37) + "|");
         System.out.println("+" + "-".repeat(98) + "+");
 
-        // Note: InsuredContractDAO doesn't exist yet, but we can show the pattern
-        System.out.println("\n[NOTE] InsuredContractDAO not yet implemented");
-        System.out.println("Pattern for testing InsuredContract CRUD:");
-        System.out.println("  - CREATE: New contract with asset and user references");
-        System.out.println("  - READ ALL: Fetch all contracts for a user");
-        System.out.println("  - READ BY ID: Get specific contract details");
-        System.out.println("  - UPDATE: Modify contract status or terms");
-        System.out.println("  - DELETE: Cancel contract if needed");
+        InsuredContractDAO contractDAO = new InsuredContractDAO();
+
+        System.out.println("\n[READ ALL TEST]");
+        List<InsuredContract> allContracts = contractDAO.readAll();
+        System.out.println("  Total contracts: " + allContracts.size());
+        allContracts.forEach(c -> System.out.println("  - " + c));
+    }
+
+    // ======================== INSURANCE PACKAGE ENTITY TESTS ========================
+    private static int testPackageCrudPackageId = -1;
+
+    private static void testInsurancePackageCrud() {
+        System.out.println("\n\n+" + "-".repeat(98) + "+");
+        System.out.println("|" + " ".repeat(27) + "INSURANCE PACKAGE ENTITY CRUD TESTS" + " ".repeat(36) + "|");
+        System.out.println("+" + "-".repeat(98) + "+");
+
+        InsurancePackageDAO dao = new InsurancePackageDAO();
+        long ts = System.currentTimeMillis();
+
+        // CREATE
+        System.out.println("\n[CREATE TEST]");
+        InsurancePackage pkg1 = new InsurancePackage("Basic Car Cover " + ts, "car",
+                "Entry-level car insurance", "Covers third-party liability", 299.99, 1.0, 12, true);
+        InsurancePackage pkg2 = new InsurancePackage("Premium Home Cover " + ts, "home",
+                "Comprehensive home insurance", "Covers fire, flood, theft", 549.00, 1.2, 12, true);
+        InsurancePackage pkg3 = new InsurancePackage("Land Protection Plan " + ts, "land",
+                "Land ownership protection", "Covers legal disputes", 199.50, 0.9, 24, true);
+
+        boolean c1 = dao.create(pkg1);
+        boolean c2 = dao.create(pkg2);
+        boolean c3 = dao.create(pkg3);
+        System.out.println("  - Package 1 (Basic Car)   : " + (c1 ? "OK CREATED" : "FAIL FAILED"));
+        System.out.println("  - Package 2 (Premium Home): " + (c2 ? "OK CREATED" : "FAIL FAILED"));
+        System.out.println("  - Package 3 (Land Plan)   : " + (c3 ? "OK CREATED" : "FAIL FAILED"));
+
+        // READ ALL
+        System.out.println("\n[READ ALL TEST]");
+        List<InsurancePackage> all = dao.readAll();
+        System.out.println("  Total packages: " + all.size());
+        all.forEach(p -> System.out.println("  - " + p));
+
+        if (all.isEmpty()) return;
+        testPackageCrudPackageId = all.get(all.size() - 1).getId();
+
+        // READ BY ID
+        System.out.println("\n[READ BY ID TEST]");
+        InsurancePackage fetched = dao.read(testPackageCrudPackageId);
+        System.out.println("  Fetched: " + (fetched != null ? "OK " + fetched : "FAIL NOT FOUND"));
+
+        // UPDATE
+        System.out.println("\n[UPDATE TEST]");
+        InsurancePackage toUpdate = all.get(all.size() - 1);
+        double oldPrice = toUpdate.getBasePrice();
+        toUpdate.setBasePrice(oldPrice + 50.0);
+        toUpdate.setDescription("Updated description " + ts);
+        boolean updated = dao.update(toUpdate);
+        System.out.println("  Update (price " + oldPrice + " -> " + toUpdate.getBasePrice() + "): "
+                + (updated ? "OK SUCCESS" : "FAIL FAILED"));
+
+        // FIND ACTIVE
+        System.out.println("\n[FIND ACTIVE TEST]");
+        List<InsurancePackage> active = dao.findActive();
+        System.out.println("  Active packages: " + active.size());
+
+        // FIND BY ASSET TYPE
+        System.out.println("\n[FIND BY ASSET TYPE TEST]");
+        for (String type : new String[]{"car", "home", "land"}) {
+            List<InsurancePackage> byType = dao.findByAssetType(type);
+            System.out.println("  Type '" + type + "': " + byType.size() + " package(s)");
+        }
+
+        // DELETE
+        System.out.println("\n[DELETE TEST]");
+        InsurancePackage toDelete = all.get(all.size() >= 3 ? all.size() - 3 : 0);
+        boolean deleted = dao.delete(toDelete.getId());
+        System.out.println("  Delete ID " + toDelete.getId() + ": " + (deleted ? "OK SUCCESS" : "FAIL FAILED"));
+        InsurancePackage afterDelete = dao.read(toDelete.getId());
+        System.out.println("  Confirm deleted: " + (afterDelete == null ? "OK null as expected" : "FAIL still exists"));
+    }
+
+    // ======================== CONTRACT REQUEST ENTITY TESTS ========================
+    private static void testContractRequestCrud() {
+        System.out.println("\n\n+" + "-".repeat(98) + "+");
+        System.out.println("|" + " ".repeat(27) + "CONTRACT REQUEST ENTITY CRUD TESTS" + " ".repeat(37) + "|");
+        System.out.println("+" + "-".repeat(98) + "+");
+
+        if (testPackageCrudPackageId == -1) {
+            System.out.println("  [SKIP] No InsurancePackage ID available — run InsurancePackage tests first.");
+            return;
+        }
+        if (testUserCrudUserId == -1) {
+            System.out.println("  [SKIP] No User ID available.");
+            return;
+        }
+
+        // Grab any asset belonging to testUserCrudUserId
+        InsuredAssetDAO assetDAO = new InsuredAssetDAO();
+        List<InsuredAsset> userAssets = assetDAO.findByUserId(testUserCrudUserId);
+        if (userAssets.isEmpty()) {
+            InsuredAsset a = new InsuredAsset("Test Car", "car",
+                    "Test asset",
+                    "Tunis", testUserCrudUserId,
+                    new java.math.BigDecimal("15000.00"), java.time.LocalDate.now());
+            assetDAO.create(a);
+            userAssets = assetDAO.findByUserId(testUserCrudUserId);
+        }
+        if (userAssets.isEmpty()) {
+            System.out.println("  [SKIP] Could not resolve an asset for user " + testUserCrudUserId);
+            return;
+        }
+        int assetId = userAssets.get(0).getId();
+
+        ContractRequestDAO dao = new ContractRequestDAO();
+
+        // CREATE
+        System.out.println("\n[CREATE TEST]");
+        ContractRequest req1 = new ContractRequest(testUserCrudUserId, assetId, testPackageCrudPackageId, 350.00, RequestStatus.PENDING);
+        ContractRequest req2 = new ContractRequest(testUserCrudUserId, assetId, testPackageCrudPackageId, 420.50, RequestStatus.PENDING);
+        ContractRequest req3 = new ContractRequest(testUserCrudUserId, assetId, testPackageCrudPackageId, 275.00, RequestStatus.APPROVED);
+
+        boolean c1 = dao.create(req1);
+        boolean c2 = dao.create(req2);
+        boolean c3 = dao.create(req3);
+        System.out.println("  - Request 1 (PENDING  350.00): " + (c1 ? "OK CREATED" : "FAIL FAILED"));
+        System.out.println("  - Request 2 (PENDING  420.50): " + (c2 ? "OK CREATED" : "FAIL FAILED"));
+        System.out.println("  - Request 3 (APPROVED 275.00): " + (c3 ? "OK CREATED" : "FAIL FAILED"));
+
+        // READ ALL
+        System.out.println("\n[READ ALL TEST]");
+        List<ContractRequest> all = dao.readAll();
+        System.out.println("  Total requests: " + all.size());
+        all.forEach(r -> System.out.println("  - " + r));
+
+        if (all.isEmpty()) return;
+        int lastId = all.get(all.size() - 1).getId();
+
+        // READ BY ID
+        System.out.println("\n[READ BY ID TEST]");
+        ContractRequest fetched = dao.read(lastId);
+        System.out.println("  Fetched: " + (fetched != null ? "OK " + fetched : "FAIL NOT FOUND"));
+
+        // UPDATE
+        System.out.println("\n[UPDATE TEST]");
+        ContractRequest toUpdate = all.get(all.size() - 1);
+        RequestStatus oldStatus = toUpdate.getStatus();
+        toUpdate.setStatus(RequestStatus.APPROVED);
+        toUpdate.setCalculatedPremium(toUpdate.getCalculatedPremium() + 25.0);
+        boolean updated = dao.update(toUpdate);
+        System.out.println("  Update (status " + oldStatus + " -> APPROVED): " + (updated ? "OK SUCCESS" : "FAIL FAILED"));
+        ContractRequest afterUpdate = dao.read(toUpdate.getId());
+        if (afterUpdate != null) {
+            System.out.println("  Verify status: " + afterUpdate.getStatus()
+                    + (afterUpdate.getStatus() == RequestStatus.APPROVED ? "  OK MATCH" : "  FAIL MISMATCH"));
+        }
+
+        // FIND BY USER ID
+        System.out.println("\n[FIND BY USER ID TEST]");
+        List<ContractRequest> byUser = dao.findByUserId(testUserCrudUserId);
+        System.out.println("  Requests for User " + testUserCrudUserId + ": " + byUser.size());
+
+        // FIND BY STATUS
+        System.out.println("\n[FIND BY STATUS TEST]");
+        for (RequestStatus s : RequestStatus.values()) {
+            System.out.println("  Status " + s + ": " + dao.findByStatus(s).size() + " request(s)");
+        }
+
+        // FIND BY PACKAGE ID
+        System.out.println("\n[FIND BY PACKAGE ID TEST]");
+        List<ContractRequest> byPkg = dao.findByPackageId(testPackageCrudPackageId);
+        System.out.println("  Requests for Package " + testPackageCrudPackageId + ": " + byPkg.size());
+
+        // DELETE
+        System.out.println("\n[DELETE TEST]");
+        int deleteId = all.get(0).getId();
+        boolean deleted = dao.delete(deleteId);
+        System.out.println("  Delete ID " + deleteId + ": " + (deleted ? "OK SUCCESS" : "FAIL FAILED"));
+        ContractRequest afterDelete = dao.read(deleteId);
+        System.out.println("  Confirm deleted: " + (afterDelete == null ? "OK null as expected" : "FAIL still exists"));
     }
 }

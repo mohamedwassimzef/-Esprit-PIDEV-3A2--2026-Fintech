@@ -110,6 +110,27 @@ public class UserDAO implements CrudInterface<User> {
         }
     }
 
+    /**
+     * Find a user by email address.
+     * @param email the email to search for
+     * @return the User if found, or null
+     */
+    public User findByEmail(String email) {
+        String query = "SELECT * FROM user WHERE email = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, email);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToEntity(rs);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error finding User by email: " + e.getMessage());
+        }
+        return null;
+    }
+
     private User mapResultSetToEntity(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");

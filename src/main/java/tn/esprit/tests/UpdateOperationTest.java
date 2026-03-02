@@ -378,15 +378,15 @@ public class UpdateOperationTest {
             InsuredAsset assetToUpdate = allAssets.get(0);
             int assetId = assetToUpdate.getId();
             System.out.println("Selected Asset ID: " + assetId);
-            System.out.println("Before Update: Name=" + assetToUpdate.getName() +
+            System.out.println("Before Update: Reference=" + assetToUpdate.getReference() +
                              " | Type=" + assetToUpdate.getType() +
-                             " | Value=" + assetToUpdate.getValue());
+                             " | DeclaredValue=" + assetToUpdate.getDeclaredValue());
 
             // Update asset
             System.out.println("\n[PERFORMING UPDATE]");
-            assetToUpdate.setName("Updated Asset - " + System.currentTimeMillis());
+            assetToUpdate.setReference("Updated Asset - " + System.currentTimeMillis());
             assetToUpdate.setType("Premium Vehicle");
-            assetToUpdate.setValue(75000.00);
+            assetToUpdate.setDeclaredValue(new java.math.BigDecimal("75000.00"));
             assetToUpdate.setDescription("Updated: High-value asset with premium coverage");
             boolean updated = assetDAO.update(assetToUpdate);
             System.out.println("Update Status: " + (updated ? "✓ SUCCESS" : "✗ FAILED"));
@@ -395,11 +395,11 @@ public class UpdateOperationTest {
             System.out.println("\n[VERIFYING UPDATE]");
             InsuredAsset updatedAsset = assetDAO.read(assetId);
             if (updatedAsset != null) {
-                System.out.println("After Update: Name=" + updatedAsset.getName() +
+                System.out.println("After Update: Reference=" + updatedAsset.getReference() +
                                  " | Type=" + updatedAsset.getType() +
-                                 " | Value=" + updatedAsset.getValue());
-                boolean typeMatch = updatedAsset.getType().equals("Premium Vehicle");
-                boolean valueMatch = updatedAsset.getValue() == 75000.00;
+                                 " | DeclaredValue=" + updatedAsset.getDeclaredValue());
+                boolean typeMatch  = updatedAsset.getType().equals("Premium Vehicle");
+                boolean valueMatch = new java.math.BigDecimal("75000.00").compareTo(updatedAsset.getDeclaredValue()) == 0;
                 System.out.println("Verification: " + (typeMatch && valueMatch ? "✓ VERIFIED" : "✗ NOT VERIFIED"));
             }
         } else {

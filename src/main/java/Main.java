@@ -1,29 +1,37 @@
+import controller.SceneManager;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import tn.esprit.SpringBootApp;
 
 public class Main extends Application {
 
+    private static ConfigurableApplicationContext springContext;
+    private Thread springThread;
+
+    @Override
+    public void init() {
+        springThread = new Thread(() -> {
+            springContext = new SpringApplicationBuilder(SpringBootApp.class).run();
+        });
+        springThread.setName("spring-boot-thread");
+        springThread.setDaemon(true); // dies automatically when JavaFX exits
+        springThread.start();
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/View/Main.fxml")
-        );
+        SceneManager.setPrimaryStage(stage);
+        SceneManager.switchScene("/View/Login.fxml", "Fintech Insurance - Login");
+    }
 
-        Scene scene = new Scene(loader.load());
-
-        // Apply stylesheet to scene
-        scene.getStylesheets().add(
-            getClass().getResource("/View/styles.css").toExternalForm()
-        );
-
-        stage.setScene(scene);
-        stage.setTitle("CRUD App");
-        stage.show();
+    @Override
+    public void stop() {
+        if (springContext != null) springContext.close();
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }

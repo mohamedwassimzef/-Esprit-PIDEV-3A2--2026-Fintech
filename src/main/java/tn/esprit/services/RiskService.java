@@ -20,12 +20,12 @@ public class RiskService {
      */
     public double calculateRisk(String city, String area) throws Exception {
 
-        // 1️⃣ Get coordinates
+        // 1. Get coordinates
         double[] coords = GeoLocation.getCoordinates(city, area);
         double lat = coords[0];
         double lon = coords[1];
 
-        // 2️⃣ Get current weather
+        // 2. Get current weather
         WeatherResponse weather = Weather.getWeather(lat, lon);
         WeatherResponse.Current current = weather.getCurrent();
 
@@ -35,12 +35,12 @@ public class RiskService {
         System.out.println("  precipitation  = " + current.getPrecipitation());
         System.out.println("  wind_speed_10m = " + current.getWind_speed_10m());
 
-        // 3️⃣ Calculate risk
+        // 3. Calculate risk
         double risk = 1.0; // base risk
 
 
 
-        // 4️⃣ Temperature risk (summer heat)
+        // 4. Temperature risk (summer heat)
         // Tunisia summer: 30–45°C, inland hotter than coastal
         if (current.getTemperature_2m() >= 35 && current.getTemperature_2m() < 40) {
             risk += 0.10; // moderate heat
@@ -48,7 +48,7 @@ public class RiskService {
             risk += 0.20; // extreme heat
         }
 
-        // 5️⃣ Precipitation risk (winter storms, floods)
+        // 5. Precipitation risk (winter storms, floods)
         // Northern Tunisia gets 5–20 mm during storms
         if (current.getPrecipitation() >= 5 && current.getPrecipitation() < 15) {
             risk += 0.10; // light storm
@@ -56,7 +56,7 @@ public class RiskService {
             risk += 0.20; // heavy storm
         }
 
-        // 6️⃣ Wind risk (coastal wind / storms)
+        // 6. Wind risk (coastal wind / storms)
         // Coastal cities can reach 20–60 km/h during storms
         if (current.getWind_speed_10m() >= 20 && current.getWind_speed_10m() < 40) {
             risk += 0.05; // moderate wind
