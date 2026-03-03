@@ -368,6 +368,277 @@
                     </content>
                 </Tab>
 
+                <!-- ═══════════════════════════════════════════════
+                     TAB 5 – ALL TRANSACTIONS (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Transactions">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminTxTotalLabel"  text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminTxCreditLabel" text="Credit: 0.00"
+                                               style="-fx-text-fill:#33dd77;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminTxDebitLabel"  text="Debit: 0.00"
+                                               style="-fx-text-fill:#ff4422;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminTransactions"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminTxTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminTxColId"          text="ID"          prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminTxColUserId"       text="User ID"     prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminTxColAmount"       text="Amount"      prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminTxColType"         text="Type"        prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminTxColStatus"       text="Status"      prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminTxColCurrency"     text="Currency"    prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminTxColDescription"  text="Description" prefWidth="180.0"/>
+                                        <TableColumn fx:id="adminTxColCreatedAt"    text="Date"        prefWidth="150.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <!-- ═══════════════════════════════════════════════
+                     TAB 6 – ALL COMPLAINTS (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Complaints">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminComplaintTotalLabel" text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminComplaintPendingLabel" text="Pending: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminComplaintResolvedLabel" text="Resolved: 0"
+                                               style="-fx-text-fill:#33dd77;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminComplaints"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminComplaintsTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminCColId"        text="ID"        prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminCColUserId"    text="User ID"   prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminCColSubject"   text="Subject"   prefWidth="200.0"/>
+                                        <TableColumn fx:id="adminCColStatus"    text="Status"    prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminCColDate"      text="Date"      prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminCColResponse"  text="Response"  prefWidth="200.0"/>
+                                        <TableColumn fx:id="adminCColCreatedAt" text="Submitted" prefWidth="150.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <!-- ═══════════════════════════════════════════════
+                     TAB 7 – ALL BUDGETS (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Budgets">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminBudgetTotalLabel" text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminBudgets"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminBudgetsTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminBColId"          text="ID"         prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminBColUserId"      text="User ID"    prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminBColName"        text="Name"       prefWidth="160.0"/>
+                                        <TableColumn fx:id="adminBColCategory"    text="Category"   prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminBColAmount"      text="Amount"     prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminBColSpent"       text="Spent"      prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminBColStartDate"   text="Start"      prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminBColEndDate"     text="End"        prefWidth="100.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <!-- ═══════════════════════════════════════════════
+                     TAB 8 – ALL LOANS (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Loans">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminLoanTotalLabel"  text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminLoanActiveLabel" text="Active: 0"
+                                               style="-fx-text-fill:#33dd77;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminLoans"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminLoansTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminLColId"           text="ID"           prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminLColUserId"       text="User ID"      prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminLColAmount"       text="Amount"       prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminLColInterestRate" text="Interest %"   prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminLColStatus"       text="Status"       prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminLColStartDate"    text="Start"        prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminLColEndDate"      text="End"          prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminLColCreatedAt"    text="Created"      prefWidth="140.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <!-- ═══════════════════════════════════════════════
+                     TAB 9 – ALL REPAYMENTS (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Repayments">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminRepaymentTotalLabel"  text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminRepaymentPaidLabel"   text="Paid: 0"
+                                               style="-fx-text-fill:#33dd77;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminRepaymentPendingLabel" text="Pending: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminRepayments"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminRepaymentsTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminRpColId"           text="ID"            prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminRpColLoanId"       text="Loan ID"       prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminRpColAmount"       text="Amount"        prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminRpColMonthly"      text="Monthly"       prefWidth="100.0"/>
+                                        <TableColumn fx:id="adminRpColPaymentType"  text="Type"          prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminRpColStatus"       text="Status"        prefWidth="90.0"/>
+                                        <TableColumn fx:id="adminRpColPaymentDate"  text="Payment Date"  prefWidth="120.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
+                <!-- ═══════════════════════════════════════════════
+                     TAB 10 – ALL EXPENSES (read-only)
+                ═══════════════════════════════════════════════ -->
+                <Tab text="Expenses">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <HBox spacing="16.0"
+                                      AnchorPane.topAnchor="10.0"
+                                      AnchorPane.leftAnchor="20.0"
+                                      AnchorPane.rightAnchor="20.0">
+                                    <children>
+                                        <Label fx:id="adminExpenseTotalLabel" text="Total: 0"
+                                               style="-fx-text-fill:#f5c800;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Label fx:id="adminExpenseSumLabel" text="Sum: 0.00 TND"
+                                               style="-fx-text-fill:#33dd77;-fx-font-weight:800;-fx-font-size:11px;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="↺" mnemonicParsing="false" onAction="#refreshAdminExpenses"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-radius:4;-fx-font-size:11px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="adminExpensesTable"
+                                           AnchorPane.topAnchor="42.0"
+                                           AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.rightAnchor="20.0"
+                                           AnchorPane.bottomAnchor="20.0">
+                                    <columns>
+                                        <TableColumn fx:id="adminExColId"          text="ID"          prefWidth="50.0"/>
+                                        <TableColumn fx:id="adminExColBudgetId"    text="Budget ID"   prefWidth="80.0"/>
+                                        <TableColumn fx:id="adminExColCategory"    text="Category"    prefWidth="120.0"/>
+                                        <TableColumn fx:id="adminExColAmount"      text="Amount"      prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminExColDescription" text="Description" prefWidth="200.0"/>
+                                        <TableColumn fx:id="adminExColDate"        text="Date"        prefWidth="110.0"/>
+                                        <TableColumn fx:id="adminExColCreatedAt"   text="Created At"  prefWidth="150.0"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+
             </tabs>
         </TabPane>
 

@@ -15,12 +15,26 @@ import tn.esprit.dao.InsurancePackageDAO;
 import tn.esprit.dao.InsuredAssetDAO;
 import tn.esprit.dao.RoleDAO;
 import tn.esprit.dao.UserDAO;
+import tn.esprit.dao.TransactionDAO;
+import tn.esprit.dao.ComplaintDAO;
+import tn.esprit.dao.BudgetDAO;
+import tn.esprit.dao.LoanDAO;
+import tn.esprit.dao.RepaymentDAO;
+import tn.esprit.dao.ExpenseDAO;
 import tn.esprit.entities.ContractRequest;
 import tn.esprit.entities.InsurancePackage;
 import tn.esprit.entities.InsuredAsset;
 import tn.esprit.entities.Role;
 import tn.esprit.entities.User;
+import tn.esprit.entities.Transaction;
+import tn.esprit.entities.Complaint;
+import tn.esprit.entities.Budget;
+import tn.esprit.entities.Loan;
+import tn.esprit.entities.Repayment;
+import tn.esprit.entities.Expense;
 import tn.esprit.enums.RequestStatus;
+import tn.esprit.enums.TransactionType;
+import tn.esprit.enums.TransactionStatus;
 import tn.esprit.services.BoldSignService;
 import tn.esprit.services.SessionManager;
 import tn.esprit.services.PDFService;
@@ -86,13 +100,71 @@ public class AdminDashboardController {
     @FXML private Button     roleSubmitBtn, roleEditBtn, roleDeleteBtn;
     @FXML private Label      roleFormTitle;
 
+    //    Tab 5 – All Transactions
+    @FXML private TableView<Transaction>                     adminTxTable;
+    @FXML private TableColumn<Transaction, Integer>          adminTxColId, adminTxColUserId;
+    @FXML private TableColumn<Transaction, java.math.BigDecimal> adminTxColAmount;
+    @FXML private TableColumn<Transaction, TransactionType>  adminTxColType;
+    @FXML private TableColumn<Transaction, TransactionStatus> adminTxColStatus;
+    @FXML private TableColumn<Transaction, String>           adminTxColCurrency, adminTxColDescription;
+    @FXML private TableColumn<Transaction, java.time.LocalDateTime> adminTxColCreatedAt;
+    @FXML private Label adminTxTotalLabel, adminTxCreditLabel, adminTxDebitLabel;
+
+    //    Tab 6 – All Complaints
+    @FXML private TableView<Complaint>                       adminComplaintsTable;
+    @FXML private TableColumn<Complaint, Integer>            adminCColId, adminCColUserId;
+    @FXML private TableColumn<Complaint, String>             adminCColSubject, adminCColStatus, adminCColResponse;
+    @FXML private TableColumn<Complaint, java.time.LocalDate>     adminCColDate;
+    @FXML private TableColumn<Complaint, java.time.LocalDateTime> adminCColCreatedAt;
+    @FXML private Label adminComplaintTotalLabel, adminComplaintPendingLabel, adminComplaintResolvedLabel;
+
+    //    Tab 7 – All Budgets
+    @FXML private TableView<Budget>                          adminBudgetsTable;
+    @FXML private TableColumn<Budget, Integer>               adminBColId, adminBColUserId;
+    @FXML private TableColumn<Budget, String>                adminBColName, adminBColCategory;
+    @FXML private TableColumn<Budget, java.math.BigDecimal>  adminBColAmount, adminBColSpent;
+    @FXML private TableColumn<Budget, java.time.LocalDate>   adminBColStartDate, adminBColEndDate;
+    @FXML private Label adminBudgetTotalLabel;
+
+    //    Tab 8 – All Loans
+    @FXML private TableView<Loan>                            adminLoansTable;
+    @FXML private TableColumn<Loan, Integer>                 adminLColId, adminLColUserId;
+    @FXML private TableColumn<Loan, java.math.BigDecimal>    adminLColAmount, adminLColInterestRate;
+    @FXML private TableColumn<Loan, String>                  adminLColStatus;
+    @FXML private TableColumn<Loan, java.time.LocalDate>     adminLColStartDate, adminLColEndDate;
+    @FXML private TableColumn<Loan, java.time.LocalDateTime> adminLColCreatedAt;
+    @FXML private Label adminLoanTotalLabel, adminLoanActiveLabel;
+
+    //    Tab 9 – All Repayments
+    @FXML private TableView<Repayment>                       adminRepaymentsTable;
+    @FXML private TableColumn<Repayment, Integer>            adminRpColId, adminRpColLoanId;
+    @FXML private TableColumn<Repayment, java.math.BigDecimal> adminRpColAmount, adminRpColMonthly;
+    @FXML private TableColumn<Repayment, String>             adminRpColPaymentType, adminRpColStatus;
+    @FXML private TableColumn<Repayment, java.time.LocalDate> adminRpColPaymentDate;
+    @FXML private Label adminRepaymentTotalLabel, adminRepaymentPaidLabel, adminRepaymentPendingLabel;
+
+    //    Tab 10 – All Expenses
+    @FXML private TableView<Expense>                         adminExpensesTable;
+    @FXML private TableColumn<Expense, Integer>              adminExColId, adminExColBudgetId;
+    @FXML private TableColumn<Expense, String>               adminExColCategory, adminExColDescription;
+    @FXML private TableColumn<Expense, java.math.BigDecimal> adminExColAmount;
+    @FXML private TableColumn<Expense, java.time.LocalDate>  adminExColDate;
+    @FXML private TableColumn<Expense, java.time.LocalDateTime> adminExColCreatedAt;
+    @FXML private Label adminExpenseTotalLabel, adminExpenseSumLabel;
+
     @FXML private Label welcomeLabel;
 
     //    Observable lists
-    private final ObservableList<ContractRequest>  requests = FXCollections.observableArrayList();
-    private final ObservableList<InsurancePackage> packages = FXCollections.observableArrayList();
-    private final ObservableList<InsuredAsset>     assets   = FXCollections.observableArrayList();
-    private final ObservableList<Role>             roles    = FXCollections.observableArrayList();
+    private final ObservableList<ContractRequest>  requests    = FXCollections.observableArrayList();
+    private final ObservableList<InsurancePackage> packages    = FXCollections.observableArrayList();
+    private final ObservableList<InsuredAsset>     assets      = FXCollections.observableArrayList();
+    private final ObservableList<Role>             roles       = FXCollections.observableArrayList();
+    private final ObservableList<Transaction>      adminTxList      = FXCollections.observableArrayList();
+    private final ObservableList<Complaint>        adminComplaintList= FXCollections.observableArrayList();
+    private final ObservableList<Budget>           adminBudgetList  = FXCollections.observableArrayList();
+    private final ObservableList<Loan>             adminLoanList    = FXCollections.observableArrayList();
+    private final ObservableList<Repayment>        adminRepaymentList = FXCollections.observableArrayList();
+    private final ObservableList<Expense>          adminExpenseList   = FXCollections.observableArrayList();
 
     private ContractRequest  selectedRequest;
     private InsurancePackage selectedPackage;
@@ -113,6 +185,12 @@ public class AdminDashboardController {
         setupPackagesTable();
         setupAssetsTable();
         setupRolesTable();
+        setupAdminTransactionsTable();
+        setupAdminComplaintsTable();
+        setupAdminBudgetsTable();
+        setupAdminLoansTable();
+        setupAdminRepaymentsTable();
+        setupAdminExpensesTable();
 
         pkgAssetType.setItems(FXCollections.observableArrayList("car", "home", "land"));
         requestStatusFilter.setItems(FXCollections.observableArrayList("ALL", "PENDING", "APPROVED", "REJECTED", "SIGNED"));
@@ -122,6 +200,12 @@ public class AdminDashboardController {
         refreshPackagesTable();
         refreshAssetsTable();
         refreshRolesTable();
+        refreshAdminTransactions();
+        refreshAdminComplaints();
+        refreshAdminBudgets();
+        refreshAdminLoans();
+        refreshAdminRepayments();
+        refreshAdminExpenses();
 
         setPkgEditMode(false);
         startAutoRefresh();
@@ -770,6 +854,228 @@ public class AdminDashboardController {
         roleEditBtn.setDisable(true);
         roleDeleteBtn.setDisable(true);
         rolesTable.getSelectionModel().clearSelection();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 5 – ALL TRANSACTIONS
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminTransactionsTable() {
+        adminTxColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminTxColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        adminTxColAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        adminTxColCurrency.setCellValueFactory(new PropertyValueFactory<>("currency"));
+        adminTxColDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        adminTxColCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+
+        adminTxColType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        adminTxColType.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(TransactionType item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.name());
+                setStyle(item == TransactionType.CREDIT
+                    ? "-fx-text-fill:#33dd77;-fx-font-weight:700;"
+                    : "-fx-text-fill:#ff4422;-fx-font-weight:700;");
+            }
+        });
+
+        adminTxColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adminTxColStatus.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(TransactionStatus item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.name());
+                String style;
+                if (item == TransactionStatus.COMPLETED)   style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
+                else if (item == TransactionStatus.FAILED) style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
+                else                                       style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
+                setStyle(style);
+            }
+        });
+
+        adminTxTable.setItems(adminTxList);
+    }
+
+    @FXML
+    private void refreshAdminTransactions() {
+        java.util.List<Transaction> all = new TransactionDAO().readAll();
+        adminTxList.setAll(all);
+        adminTxTotalLabel.setText("Total: " + all.size());
+
+        java.math.BigDecimal credit = all.stream()
+            .filter(t -> t.getType() == TransactionType.CREDIT && t.getStatus() == TransactionStatus.COMPLETED)
+            .map(Transaction::getAmount).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal debit = all.stream()
+            .filter(t -> t.getType() == TransactionType.DEBIT && t.getStatus() == TransactionStatus.COMPLETED)
+            .map(Transaction::getAmount).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        adminTxCreditLabel.setText("Credit: " + credit.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString() + " TND");
+        adminTxDebitLabel.setText("Debit: "  + debit.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()  + " TND");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 6 – ALL COMPLAINTS
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminComplaintsTable() {
+        adminCColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminCColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        adminCColSubject.setCellValueFactory(new PropertyValueFactory<>("subject"));
+        adminCColResponse.setCellValueFactory(new PropertyValueFactory<>("response"));
+        adminCColDate.setCellValueFactory(new PropertyValueFactory<>("complaintDate"));
+        adminCColCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+
+        adminCColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adminCColStatus.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.toUpperCase());
+                String style;
+                if (item.equalsIgnoreCase("resolved")) style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
+                else if (item.equalsIgnoreCase("rejected")) style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
+                else style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
+                setStyle(style);
+            }
+        });
+
+        adminComplaintsTable.setItems(adminComplaintList);
+    }
+
+    @FXML
+    private void refreshAdminComplaints() {
+        java.util.List<Complaint> all = new ComplaintDAO().readAll();
+        adminComplaintList.setAll(all);
+        long pending  = all.stream().filter(c -> "pending".equalsIgnoreCase(c.getStatus())).count();
+        long resolved = all.stream().filter(c -> "resolved".equalsIgnoreCase(c.getStatus())).count();
+        adminComplaintTotalLabel.setText("Total: " + all.size());
+        adminComplaintPendingLabel.setText("Pending: " + pending);
+        adminComplaintResolvedLabel.setText("Resolved: " + resolved);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 7 – ALL BUDGETS
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminBudgetsTable() {
+        adminBColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminBColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        adminBColName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        adminBColCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        adminBColAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        adminBColSpent.setCellValueFactory(new PropertyValueFactory<>("spentAmount"));
+        adminBColStartDate.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        adminBColEndDate.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+        adminBudgetsTable.setItems(adminBudgetList);
+    }
+
+    @FXML
+    private void refreshAdminBudgets() {
+        java.util.List<Budget> all = new BudgetDAO().readAll();
+        adminBudgetList.setAll(all);
+        adminBudgetTotalLabel.setText("Total: " + all.size());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 8 – ALL LOANS
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminLoansTable() {
+        adminLColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminLColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
+        adminLColAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        adminLColInterestRate.setCellValueFactory(new PropertyValueFactory<>("interestRate"));
+        adminLColStartDate.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        adminLColEndDate.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+        adminLColCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+
+        adminLColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adminLColStatus.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.toUpperCase());
+                String style;
+                if (item.equalsIgnoreCase("active"))    style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
+                else if (item.equalsIgnoreCase("closed"))    style = "-fx-text-fill:#888;-fx-font-weight:700;";
+                else if (item.equalsIgnoreCase("defaulted")) style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
+                else style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
+                setStyle(style);
+            }
+        });
+
+        adminLoansTable.setItems(adminLoanList);
+    }
+
+    @FXML
+    private void refreshAdminLoans() {
+        java.util.List<Loan> all = new LoanDAO().readAll();
+        adminLoanList.setAll(all);
+        long active = all.stream().filter(l -> "active".equalsIgnoreCase(l.getStatus())).count();
+        adminLoanTotalLabel.setText("Total: " + all.size());
+        adminLoanActiveLabel.setText("Active: " + active);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 9 – ALL REPAYMENTS
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminRepaymentsTable() {
+        adminRpColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminRpColLoanId.setCellValueFactory(new PropertyValueFactory<>("loanId"));
+        adminRpColAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        adminRpColMonthly.setCellValueFactory(new PropertyValueFactory<>("monthlyPayment"));
+        adminRpColPaymentType.setCellValueFactory(new PropertyValueFactory<>("paymentType"));
+        adminRpColPaymentDate.setCellValueFactory(new PropertyValueFactory<>("paymentDate"));
+
+        adminRpColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adminRpColStatus.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.toUpperCase());
+                String style;
+                if (item.equalsIgnoreCase("paid"))       style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
+                else if (item.equalsIgnoreCase("late"))  style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
+                else                                     style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
+                setStyle(style);
+            }
+        });
+
+        adminRepaymentsTable.setItems(adminRepaymentList);
+    }
+
+    @FXML
+    private void refreshAdminRepayments() {
+        java.util.List<Repayment> all = new RepaymentDAO().readAll();
+        adminRepaymentList.setAll(all);
+        long paid    = all.stream().filter(r -> "paid".equalsIgnoreCase(r.getStatus())).count();
+        long pending = all.stream().filter(r -> "pending".equalsIgnoreCase(r.getStatus())).count();
+        adminRepaymentTotalLabel.setText("Total: " + all.size());
+        adminRepaymentPaidLabel.setText("Paid: " + paid);
+        adminRepaymentPendingLabel.setText("Pending: " + pending);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  TAB 10 – ALL EXPENSES
+    // ─────────────────────────────────────────────────────────────────────────
+    private void setupAdminExpensesTable() {
+        adminExColId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adminExColBudgetId.setCellValueFactory(new PropertyValueFactory<>("budgetId"));
+        adminExColCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        adminExColAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        adminExColDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        adminExColDate.setCellValueFactory(new PropertyValueFactory<>("expenseDate"));
+        adminExColCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+        adminExpensesTable.setItems(adminExpenseList);
+    }
+
+    @FXML
+    private void refreshAdminExpenses() {
+        java.util.List<Expense> all = new ExpenseDAO().readAll();
+        adminExpenseList.setAll(all);
+        java.math.BigDecimal sum = all.stream()
+            .map(Expense::getAmount)
+            .filter(a -> a != null)
+            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        adminExpenseTotalLabel.setText("Total: " + all.size());
+        adminExpenseSumLabel.setText("Sum: " + sum.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString() + " TND");
     }
 
     //
