@@ -3,13 +3,9 @@ package tn.esprit.app;
 import tn.esprit.dao.InsuredAssetDAO;
 import tn.esprit.dao.InsuredContractDAO;
 import tn.esprit.entities.InsuredContract;
-import tn.esprit.enums.ContractStatus;
 import tn.esprit.services.Weather;
 import tn.esprit.utils.MyDB;
 import tn.esprit.utils.WeatherResponse;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Main {
 
@@ -46,16 +42,8 @@ public class Main {
         System.out.println(insuredAssetDAO.readAll());
 
         InsuredContract insuredContract = new InsuredContract(
-                1,
-                "IC-2026-" + System.currentTimeMillis(),
-                29,
-                127,
-                LocalDate.of(2026, 2, 8),
-                LocalDate.of(2027, 2, 8),
-                1000.0,
-                50000.0,
-                ContractStatus.ACTIVE,
-                LocalDateTime.now(),
+                "REF-TEST-" + System.currentTimeMillis(),
+                "DOC-" + System.currentTimeMillis(),
                 null
         );
 

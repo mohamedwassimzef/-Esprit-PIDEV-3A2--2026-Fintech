@@ -109,31 +109,16 @@ public class MainController {
     private Tab contractListTab;
 
     @FXML
-    private TextField contractNumberField;
+    private TextField contractAssetRefField;
 
     @FXML
-    private TextField contractAssetIdField;
+    private TextField contractDocIdField;
 
     @FXML
-    private TextField contractUserIdField;
-
-    @FXML
-    private DatePicker contractStartDatePicker;
-
-    @FXML
-    private DatePicker contractEndDatePicker;
-
-    @FXML
-    private TextField contractPremiumField;
-
-    @FXML
-    private TextField contractCoverageField;
+    private TextField contractFilePathField;
 
     @FXML
     private ComboBox<ContractStatus> contractStatusCombo;
-
-    @FXML
-    private TextField contractApprovedByField;
 
     @FXML
     private Button contractSubmitButton;
@@ -145,31 +130,22 @@ public class MainController {
     private TableColumn<InsuredContract, Integer> contractColId;
 
     @FXML
-    private TableColumn<InsuredContract, String> contractColNumber;
+    private TableColumn<InsuredContract, String> contractColAssetRef;
 
     @FXML
-    private TableColumn<InsuredContract, Integer> contractColAssetId;
-
-    @FXML
-    private TableColumn<InsuredContract, Integer> contractColUserId;
-
-    @FXML
-    private TableColumn<InsuredContract, LocalDate> contractColStart;
-
-    @FXML
-    private TableColumn<InsuredContract, LocalDate> contractColEnd;
-
-    @FXML
-    private TableColumn<InsuredContract, Double> contractColPremium;
-
-    @FXML
-    private TableColumn<InsuredContract, Double> contractColCoverage;
+    private TableColumn<InsuredContract, String> contractColDocId;
 
     @FXML
     private TableColumn<InsuredContract, ContractStatus> contractColStatus;
 
     @FXML
-    private TableColumn<InsuredContract, Integer> contractColApprovedBy;
+    private TableColumn<InsuredContract, LocalDateTime> contractColCreatedAt;
+
+    @FXML
+    private TableColumn<InsuredContract, LocalDateTime> contractColSignedAt;
+
+    @FXML
+    private TableColumn<InsuredContract, String> contractColFilePath;
 
     @FXML
     private Button contractUpdateButton;
@@ -327,15 +303,12 @@ public class MainController {
 
     private void setupContractTable() {
         contractColId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        contractColNumber.setCellValueFactory(new PropertyValueFactory<>("contractNumber"));
-        contractColAssetId.setCellValueFactory(new PropertyValueFactory<>("assetId"));
-        contractColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
-        contractColStart.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-        contractColEnd.setCellValueFactory(new PropertyValueFactory<>("endDate"));
-        contractColPremium.setCellValueFactory(new PropertyValueFactory<>("premiumAmount"));
-        contractColCoverage.setCellValueFactory(new PropertyValueFactory<>("coverageAmount"));
+        contractColAssetRef.setCellValueFactory(new PropertyValueFactory<>("assetRef"));
+        contractColDocId.setCellValueFactory(new PropertyValueFactory<>("boldSignDocumentId"));
         contractColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        contractColApprovedBy.setCellValueFactory(new PropertyValueFactory<>("approvedBy"));
+        contractColCreatedAt.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+        contractColSignedAt.setCellValueFactory(new PropertyValueFactory<>("signedAt"));
+        contractColFilePath.setCellValueFactory(new PropertyValueFactory<>("localFilePath"));
 
         contractColId.setVisible(false);
 
@@ -435,30 +408,11 @@ public class MainController {
             return;
         }
 
-        contractNumberField.setText(selectedContract.getContractNumber());
-        contractAssetIdField.setText(String.valueOf(selectedContract.getAssetId()));
-        contractUserIdField.setText(String.valueOf(selectedContract.getUserId()));
-        contractPremiumField.setText(String.valueOf(selectedContract.getPremiumAmount()));
-        contractCoverageField.setText(String.valueOf(selectedContract.getCoverageAmount()));
+        contractAssetRefField.setText(selectedContract.getAssetRef() != null ? selectedContract.getAssetRef() : "");
+        contractDocIdField.setText(selectedContract.getBoldSignDocumentId() != null ? selectedContract.getBoldSignDocumentId() : "");
+        contractFilePathField.setText(selectedContract.getLocalFilePath() != null ? selectedContract.getLocalFilePath() : "");
         contractStatusCombo.setValue(selectedContract.getStatus());
 
-        if (selectedContract.getStartDate() != null) {
-            contractStartDatePicker.setValue(selectedContract.getStartDate());
-        } else {
-            contractStartDatePicker.setValue(null);
-        }
-
-        if (selectedContract.getEndDate() != null) {
-            contractEndDatePicker.setValue(selectedContract.getEndDate());
-        } else {
-            contractEndDatePicker.setValue(null);
-        }
-
-        if (selectedContract.getApprovedBy() != null) {
-            contractApprovedByField.setText(String.valueOf(selectedContract.getApprovedBy()));
-        } else {
-            contractApprovedByField.clear();
-        }
 
         setContractEditMode(true);
         mainTabs.getSelectionModel().select(contractFormTab);
@@ -550,81 +504,21 @@ public class MainController {
     @FXML
     private void handleContractSubmitButton() {
         try {
-            String contractNumber = contractNumberField.getText().trim();
-            String assetIdText = contractAssetIdField.getText().trim();
-            String userIdText = contractUserIdField.getText().trim();
-            String premiumText = contractPremiumField.getText().trim();
-            String coverageText = contractCoverageField.getText().trim();
+            String assetRef  = contractAssetRefField.getText().trim();
+            String docId     = contractDocIdField.getText().trim();
+            String filePath  = contractFilePathField.getText().trim();
             ContractStatus status = contractStatusCombo.getValue();
 
             // Validate required fields
-            if (contractNumber.isEmpty() || assetIdText.isEmpty() || userIdText.isEmpty() ||
-                premiumText.isEmpty() || coverageText.isEmpty() || status == null) {
+            if (assetRef.isEmpty() || docId.isEmpty() || status == null) {
                 showAlert(AlertType.ERROR, "Validation Error",
-                         "Please fill in all required fields.");
-                return;
-            }
-
-            LocalDate startDate = contractStartDatePicker.getValue();
-            LocalDate endDate = contractEndDatePicker.getValue();
-
-            if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
-                showAlert(AlertType.ERROR, "Validation Error", "End date must be after start date.");
-                return;
-            }
-
-            int assetId;
-            int userId;
-            double premiumAmount;
-            double coverageAmount;
-
-            try {
-                assetId = Integer.parseInt(assetIdText);
-                userId = Integer.parseInt(userIdText);
-                premiumAmount = Double.parseDouble(premiumText);
-                coverageAmount = Double.parseDouble(coverageText);
-            } catch (NumberFormatException e) {
-                showAlert(AlertType.ERROR, "Validation Error", "Invalid numeric values.");
-                return;
-            }
-
-            // Parse optional Approved By
-            Integer approvedBy = null;
-            String approvedByText = contractApprovedByField.getText().trim();
-            if (!approvedByText.isEmpty()) {
-                try {
-                    approvedBy = Integer.parseInt(approvedByText);
-                } catch (NumberFormatException e) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Approved By must be a valid integer.");
-                    return;
-                }
-            }
-
-            // Verify asset and user exist
-            InsuredAssetDAO assetDAO = new InsuredAssetDAO();
-            if (assetDAO.read(assetId) == null) {
-                showAlert(AlertType.ERROR, "Asset Not Found", "Asset ID does not exist.");
-                return;
-            }
-
-            UserDAO userDAO = new UserDAO();
-            // Verify main contract user exists
-            if (userDAO.read(userId) == null) {
-                showAlert(AlertType.ERROR, "User Not Found", "User ID does not exist.");
-                return;
-            }
-
-            // Verify Approved By user exists when provided to avoid FK violation
-            if (approvedBy != null && userDAO.read(approvedBy) == null) {
-                showAlert(AlertType.ERROR, "User Not Found",
-                         "Approved By user ID " + approvedBy + " does not exist.");
+                         "Asset Ref, Document ID, and Status are required.");
                 return;
             }
 
             InsuredContractDAO contractDAO = new InsuredContractDAO();
             boolean success;
 
-            // contractNumber is passed directly as String
             if (isContractEditMode) {
                 if (selectedContract == null) {
                     showAlert(AlertType.WARNING, "No Selection", "Please double-click a contract first.");
@@ -633,33 +527,22 @@ public class MainController {
 
                 InsuredContract contract = new InsuredContract(
                     selectedContract.getId(),
-                    contractNumber,
-                    assetId,
-                    userId,
-                    startDate,
-                    endDate,
-                    premiumAmount,
-                    coverageAmount,
+                    assetRef,
+                    docId,
                     status,
                     selectedContract.getCreatedAt(),
-                    approvedBy
+                    selectedContract.getSignedAt(),
+                    filePath.isEmpty() ? null : filePath
                 );
 
                 success = contractDAO.update(contract);
             } else {
                 InsuredContract contract = new InsuredContract(
-                    0,
-                    contractNumber,
-                    assetId,
-                    userId,
-                    startDate,
-                    endDate,
-                    premiumAmount,
-                    coverageAmount,
-                    status,
-                    LocalDateTime.now(),
-                    approvedBy
+                    assetRef,
+                    docId,
+                    filePath.isEmpty() ? null : filePath
                 );
+                contract.setStatus(status);
 
                 success = contractDAO.create(contract);
             }
@@ -745,30 +628,16 @@ public class MainController {
     }
 
     private void clearContractForm() {
-        contractNumberField.clear();
-        contractAssetIdField.clear();
-        contractUserIdField.clear();
-        contractStartDatePicker.setValue(null);
-        contractEndDatePicker.setValue(null);
-        contractPremiumField.clear();
-        contractCoverageField.clear();
+        contractAssetRefField.clear();
+        contractDocIdField.clear();
+        contractFilePathField.clear();
         contractStatusCombo.setValue(null);
-        contractApprovedByField.clear();
         setContractEditMode(false);
     }
 
     private void applyInputControls() {
         // Asset fields
         applyIntegerOnly(AssUser);
-
-        // Contract fields
-        // Contract number back to alphanumeric with dash/underscore (string-based IDs)
-        applyAlphanumericWithDash(contractNumberField);
-        applyIntegerOnly(contractAssetIdField);
-        applyIntegerOnly(contractUserIdField);
-        applyDecimalOnly(contractPremiumField);
-        applyDecimalOnly(contractCoverageField);
-        applyIntegerOnly(contractApprovedByField);
     }
 
     private void applyIntegerOnly(TextField field) {

@@ -494,11 +494,61 @@ public class CrudTestSuite {
         System.out.println("+" + "-".repeat(98) + "+");
 
         InsuredContractDAO contractDAO = new InsuredContractDAO();
+        long ts = System.currentTimeMillis();
+        // Use a reference that exists in insured_asset — adjust as needed for your DB
+        String testRef = "REF-TEST-" + ts;
 
+        // CREATE
+        System.out.println("\n[CREATE TEST]");
+        InsuredContract c1 = new InsuredContract(testRef, "DOC-" + ts, "/contracts/doc_" + ts + ".pdf");
+        boolean created = contractDAO.create(c1);
+        System.out.println("  - Create: " + (created ? "OK CREATED" : "FAIL FAILED"));
+
+        // READ ALL
         System.out.println("\n[READ ALL TEST]");
-        List<InsuredContract> allContracts = contractDAO.readAll();
-        System.out.println("  Total contracts: " + allContracts.size());
-        allContracts.forEach(c -> System.out.println("  - " + c));
+        List<InsuredContract> all = contractDAO.readAll();
+        System.out.println("  Total contracts: " + all.size());
+        all.forEach(c -> System.out.println("  - " + c));
+
+        if (all.isEmpty()) return;
+        InsuredContract latest = all.get(0); // ordered DESC
+
+        // READ BY ID
+        System.out.println("\n[READ BY ID TEST]");
+        InsuredContract found = contractDAO.read(latest.getId());
+        System.out.println("  - Found: " + found);
+
+        // FIND BY REFERENCE
+        System.out.println("\n[FIND BY REFERENCE TEST]");
+        List<InsuredContract> byRef = contractDAO.findByReference(testRef);
+        System.out.println("  - Contracts for ref '" + testRef + "': " + byRef.size());
+        byRef.forEach(c -> System.out.println("    - " + c));
+
+        // UPDATE (mark signed)
+        System.out.println("\n[UPDATE TEST]");
+        if (found != null) {
+            found.setStatus(tn.esprit.enums.ContractStatus.SIGNED);
+            found.setSignedAt(java.time.LocalDateTime.now());
+            boolean updated = contractDAO.update(found);
+            System.out.println("  - Update status to SIGNED: " + (updated ? "OK UPDATED" : "FAIL FAILED"));
+        }
+
+        // FIND BY DOCUMENT ID
+        System.out.println("\n[FIND BY DOCUMENT ID TEST]");
+        InsuredContract byDoc = contractDAO.findByDocumentId("DOC-" + ts);
+        System.out.println("  - By documentId: " + byDoc);
+
+        // MARK AS SIGNED (convenience method)
+        System.out.println("\n[MARK AS SIGNED TEST]");
+        boolean signed = contractDAO.markAsSigned("DOC-" + ts);
+        System.out.println("  - markAsSigned: " + (signed ? "OK SIGNED" : "FAIL FAILED"));
+
+        // DELETE
+        System.out.println("\n[DELETE TEST]");
+        if (found != null) {
+            boolean deleted = contractDAO.delete(found.getId());
+            System.out.println("  - Delete: " + (deleted ? "OK DELETED" : "FAIL FAILED"));
+        }
     }
 
     // ======================== INSURANCE PACKAGE ENTITY TESTS ========================

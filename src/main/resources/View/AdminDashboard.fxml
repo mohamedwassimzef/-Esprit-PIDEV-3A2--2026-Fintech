@@ -89,6 +89,14 @@
                                                text="SIGNED: 0"
                                                style="-fx-text-fill:#00ccff;-fx-font-weight:800;-fx-font-size:11px;-fx-letter-spacing:1.0;-fx-padding:4 0 0 0;"/>
                                         <Region HBox.hgrow="ALWAYS"/>
+                                        <!-- Live refresh indicator -->
+                                        <Label fx:id="autoRefreshLabel" text="● LIVE"
+                                               style="-fx-text-fill:#33dd77;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;-fx-padding:4 6 0 0;"/>
+                                        <Label fx:id="lastRefreshLabel" text="refreshing..."
+                                               style="-fx-text-fill:#555;-fx-font-size:10px;-fx-padding:4 10 0 0;"/>
+                                        <Button fx:id="manualRefreshBtn" text="↺ Refresh"
+                                                mnemonicParsing="false" onAction="#handleManualRefresh"
+                                                style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-width:1;-fx-border-radius:4;-fx-font-size:10px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
                                         <ComboBox fx:id="requestStatusFilter" promptText="All Statuses"
                                                   onAction="#handleRequestStatusFilter" prefWidth="160.0"/>
                                     </children>

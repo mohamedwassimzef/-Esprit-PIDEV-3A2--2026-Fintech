@@ -33,6 +33,14 @@ public class MyDB {
         return conx;
     }
 
+    /**
+     * Opens and returns a brand-new JDBC connection independent of the shared one.
+     * Use this from background/webhook threads to avoid concurrency issues.
+     */
+    public Connection openFreshConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USERNAME, PWD);
+    }
+
     public String getUsername() { return USERNAME; }
     public String getPassword()  { return PWD; }
     public String getUrl()       { return URL; }

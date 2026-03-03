@@ -1,6 +1,8 @@
 package controller;
 
 import javafx.application.Platform;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -13,6 +15,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import tn.esprit.dao.ContractRequestDAO;
 import tn.esprit.dao.InsurancePackageDAO;
 import tn.esprit.dao.InsuredAssetDAO;
@@ -25,10 +28,13 @@ import tn.esprit.services.SessionManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
@@ -74,6 +80,13 @@ public class UserDashboardController {
     @FXML private TableColumn<ContractRequest, Double>      reqColPremium;
     @FXML private TableColumn<ContractRequest, RequestStatus> reqColStatus;
     @FXML private TableColumn<ContractRequest, LocalDateTime> reqColCreatedAt;
+    @FXML private Label  reqAutoRefreshLabel, reqLastRefreshLabel;
+    @FXML private Button reqManualRefreshBtn;
+
+    // -- Auto-refresh for My Requests ------------------------------------
+    private static final int    REQ_POLL_INTERVAL_SECONDS = 5;
+    private Timeline             reqAutoRefreshTimeline;
+    private static final DateTimeFormatter REQ_TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     // -- Tabs ------------------------------------------------------------
     @FXML private TabPane mainTabs;
@@ -118,6 +131,7 @@ public class UserDashboardController {
         highlightTypeCard("car");
 
         setEditMode(false);
+        startReqAutoRefresh();
     }
 
     // --------------------------------------------------------------------
@@ -226,6 +240,99 @@ public class UserDashboardController {
     private void refreshRequestsTable() {
         int userId = SessionManager.getInstance().getUserId();
         requests.setAll(new ContractRequestDAO().findByUserId(userId));
+    }
+
+    // --------------------------------------------------------------------
+    //  AUTO-REFRESH for My Requests (polls every REQ_POLL_INTERVAL_SECONDS)
+    // --------------------------------------------------------------------
+
+    /**
+     * Starts a JavaFX Timeline that ticks every REQ_POLL_INTERVAL_SECONDS seconds.
+     * Each tick fetches fresh data on a background thread and updates the table on
+     * the FX thread only when something changed (smart diff on id + status).
+     * Stopped automatically when the scene window is closed.
+     */
+    private void startReqAutoRefresh() {
+        reqAutoRefreshTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(REQ_POLL_INTERVAL_SECONDS), e -> pollUserContractRequests())
+        );
+        reqAutoRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        reqAutoRefreshTimeline.play();
+
+        // Stop the timer when the window is closed / user navigates away
+        requestsTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.setOnHidden(ev -> stopReqAutoRefresh());
+                    }
+                });
+            }
+        });
+    }
+
+    private void stopReqAutoRefresh() {
+        if (reqAutoRefreshTimeline != null) {
+            reqAutoRefreshTimeline.stop();
+            System.out.println("[AutoRefresh] User request poller stopped.");
+        }
+    }
+
+    /**
+     * Fetches fresh user requests on a daemon background thread,
+     * then updates the UI only if data actually changed.
+     */
+    private void pollUserContractRequests() {
+        Thread pollThread = new Thread(() -> {
+            try {
+                int userId = SessionManager.getInstance().getUserId();
+                List<ContractRequest> fresh = new ContractRequestDAO().findByUserId(userId);
+                Platform.runLater(() -> {
+                    // Smart diff: only redraw if size or any id/status changed
+                    boolean changed = fresh.size() != requests.size();
+                    if (!changed) {
+                        for (int i = 0; i < fresh.size(); i++) {
+                            if (fresh.get(i).getId() != requests.get(i).getId()
+                                || !Objects.equals(fresh.get(i).getStatus(), requests.get(i).getStatus())) {
+                                changed = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (changed) {
+                        System.out.println("[AutoRefresh] User requests changed – updating table.");
+                        requests.setAll(fresh);
+                        flashReqLiveIndicator();
+                    }
+
+                    // Always update the last-refresh timestamp
+                    if (reqLastRefreshLabel != null)
+                        reqLastRefreshLabel.setText("last: " + LocalTime.now().format(REQ_TIME_FMT));
+                });
+            } catch (Exception ex) {
+                System.out.println("[AutoRefresh] User poll error: " + ex.getMessage());
+            }
+        }, "user-req-poll-thread");
+        pollThread.setDaemon(true);
+        pollThread.start();
+    }
+
+    /** Briefly flashes the LIVE indicator gold when a change is detected. */
+    private void flashReqLiveIndicator() {
+        if (reqAutoRefreshLabel == null) return;
+        reqAutoRefreshLabel.setStyle("-fx-text-fill:#f5c800;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;");
+        new Timeline(new KeyFrame(Duration.seconds(1), e ->
+            reqAutoRefreshLabel.setStyle("-fx-text-fill:#33dd77;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;")
+        )).play();
+    }
+
+    /** Manual refresh button in My Requests tab. */
+    @FXML
+    private void handleReqManualRefresh() {
+        refreshRequestsTable();
+        if (reqLastRefreshLabel != null)
+            reqLastRefreshLabel.setText("last: " + LocalTime.now().format(REQ_TIME_FMT));
     }
 
     // --------------------------------------------------------------------

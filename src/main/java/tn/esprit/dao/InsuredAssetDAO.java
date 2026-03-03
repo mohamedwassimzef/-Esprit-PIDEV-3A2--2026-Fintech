@@ -123,6 +123,26 @@ public class InsuredAssetDAO implements CrudInterface<InsuredAsset> {
         return list;
     }
 
+    /**
+     * Looks up the reference string for a given asset ID.
+     * Opens a fresh connection — safe to call from any thread (e.g. webhook).
+     *
+     * @param assetId the insured_asset.id
+     * @return the reference string, or null if not found
+     */
+    public String findReferenceByAssetId(int assetId) {
+        String sql = "SELECT reference FROM insured_asset WHERE id = ?";
+        try (Connection c = tn.esprit.utils.MyDB.getInstance().openFreshConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, assetId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getString("reference");
+        } catch (SQLException ex) {
+            System.out.println("Error finding reference by assetId: " + ex.getMessage());
+        }
+        return null;
+    }
+
     // ── private helper ────────────────────────────────────────────────────
     private InsuredAsset map(ResultSet rs) throws SQLException {
         Timestamp ts = rs.getTimestamp("created_at");

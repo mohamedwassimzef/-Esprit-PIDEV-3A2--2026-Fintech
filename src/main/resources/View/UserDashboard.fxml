@@ -240,8 +240,24 @@
                     <content>
                         <AnchorPane>
                             <children>
+                                <!-- Live refresh status bar -->
+                                <HBox spacing="10" alignment="CENTER_LEFT"
+                                      AnchorPane.topAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0"
+                                      style="-fx-padding:6 12 6 12;-fx-background-color:#1a1a1a;-fx-border-color:#2a2a2a;-fx-border-radius:5;-fx-background-radius:5;">
+                                    <Label text="MY CONTRACT REQUESTS"
+                                           style="-fx-text-fill:#f5c800;-fx-font-weight:900;-fx-font-size:11px;-fx-letter-spacing:1.0;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="reqAutoRefreshLabel" text="● LIVE"
+                                           style="-fx-text-fill:#33dd77;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;"/>
+                                    <Label fx:id="reqLastRefreshLabel" text="refreshing..."
+                                           style="-fx-text-fill:#555;-fx-font-size:10px;"/>
+                                    <Button fx:id="reqManualRefreshBtn" text="↺ Refresh"
+                                            mnemonicParsing="false" onAction="#handleReqManualRefresh"
+                                            style="-fx-background-color:transparent;-fx-border-color:#555;-fx-text-fill:#aaa;-fx-border-width:1;-fx-border-radius:4;-fx-font-size:10px;-fx-padding:3 10 3 10;-fx-cursor:hand;"/>
+                                </HBox>
+
                                 <TableView fx:id="requestsTable"
-                                           AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0"
+                                           AnchorPane.topAnchor="54.0" AnchorPane.leftAnchor="20.0"
                                            AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="20.0">
                                     <columns>
                                         <TableColumn fx:id="reqColId"        text="ID"        prefWidth="50.0" visible="false"/>

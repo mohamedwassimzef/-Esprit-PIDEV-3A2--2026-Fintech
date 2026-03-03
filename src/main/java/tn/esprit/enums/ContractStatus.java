@@ -1,10 +1,9 @@
 package tn.esprit.enums;
 
 public enum ContractStatus {
-    PENDING,
-    APPROVED,
-    REJECTED,
-    ACTIVE;
+    NOT_SIGNED,
+    SIGNED,
+    REJECTED;
 
     // Convert DB string → enum
     public static ContractStatus fromString(String value) {

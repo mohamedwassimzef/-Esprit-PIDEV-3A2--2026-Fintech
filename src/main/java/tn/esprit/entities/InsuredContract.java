@@ -1,96 +1,94 @@
 package tn.esprit.entities;
 
 import tn.esprit.enums.ContractStatus;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * InsuredContract entity — matches the insured_contract table schema.
+ *
+ * CREATE TABLE insured_contract (
+ *   id                   INT AUTO_INCREMENT PRIMARY KEY,
+ *   asset_ref            VARCHAR(150) NOT NULL,
+ *   boldsign_document_id VARCHAR(255) NOT NULL,
+ *   status               ENUM('NOT_SIGNED','SIGNED','REJECTED') NOT NULL DEFAULT 'NOT_SIGNED',
+ *   created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ *   signed_at            TIMESTAMP NULL DEFAULT NULL,
+ *   local_file_path      VARCHAR(500) DEFAULT NULL,
+ *   CONSTRAINT fk_asset FOREIGN KEY (asset_ref) REFERENCES insured_asset(reference) ON DELETE CASCADE,
+ *   UNIQUE KEY uk_document_id (boldsign_document_id),
+ *   INDEX idx_asset_ref (asset_ref)
+ * );
+ */
 public class InsuredContract {
 
-    private int id;
-    private String contractNumber;
-    private int assetId;
-    private int userId;
-
-    private LocalDate startDate;
-    private LocalDate endDate;
-
-    private double premiumAmount;
-    private double coverageAmount;
-
+    private int            id;
+    private String         assetRef;            // FK → insured_asset.reference
+    private String         boldSignDocumentId;
     private ContractStatus status;
-    private LocalDateTime createdAt;
+    private LocalDateTime  createdAt;
+    private LocalDateTime  signedAt;
+    private String         localFilePath;
 
-    private Integer approvedBy;
+    // ── Constructors ──────────────────────────────────────────────────────
 
     public InsuredContract() {}
 
-    public InsuredContract(int id, String contractNumber, int assetId, int userId,
-                           LocalDate startDate, LocalDate endDate,
-                           double premiumAmount, double coverageAmount,
+    /** Full constructor — used when reading from DB. */
+    public InsuredContract(int id, String assetRef, String boldSignDocumentId,
                            ContractStatus status, LocalDateTime createdAt,
-                           Integer approvedBy) {
-        this.id = id;
-        this.contractNumber = contractNumber;
-        this.assetId = assetId;
-        this.userId = userId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.premiumAmount = premiumAmount;
-        this.coverageAmount = coverageAmount;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.approvedBy = approvedBy;
+                           LocalDateTime signedAt, String localFilePath) {
+        this.id                 = id;
+        this.assetRef           = assetRef;
+        this.boldSignDocumentId = boldSignDocumentId;
+        this.status             = status;
+        this.createdAt          = createdAt;
+        this.signedAt           = signedAt;
+        this.localFilePath      = localFilePath;
     }
 
-    // Getters & Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    /** Create constructor — id and createdAt are set by the DB. */
+    public InsuredContract(String assetRef, String boldSignDocumentId, String localFilePath) {
+        this.assetRef           = assetRef;
+        this.boldSignDocumentId = boldSignDocumentId;
+        this.status             = ContractStatus.NOT_SIGNED;
+        this.localFilePath      = localFilePath;
+    }
 
-    public String getContractNumber() { return contractNumber; }
-    public void setContractNumber(String contractNumber) { this.contractNumber = contractNumber; }
+    // ── Getters & Setters ─────────────────────────────────────────────────
 
-    public int getAssetId() { return assetId; }
-    public void setAssetId(int assetId) { this.assetId = assetId; }
+    public int getId()                        { return id; }
+    public void setId(int id)                 { this.id = id; }
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public String getAssetRef()               { return assetRef; }
+    public void setAssetRef(String assetRef)  { this.assetRef = assetRef; }
 
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public String getBoldSignDocumentId()     { return boldSignDocumentId; }
+    public void setBoldSignDocumentId(String v) { this.boldSignDocumentId = v; }
 
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public ContractStatus getStatus()         { return status; }
+    public void setStatus(ContractStatus s)   { this.status = s; }
 
-    public double getPremiumAmount() { return premiumAmount; }
-    public void setPremiumAmount(double premiumAmount) { this.premiumAmount = premiumAmount; }
+    public LocalDateTime getCreatedAt()       { return createdAt; }
+    public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
 
-    public double getCoverageAmount() { return coverageAmount; }
-    public void setCoverageAmount(double coverageAmount) { this.coverageAmount = coverageAmount; }
+    public LocalDateTime getSignedAt()        { return signedAt; }
+    public void setSignedAt(LocalDateTime v)  { this.signedAt = v; }
 
-    public ContractStatus getStatus() { return status; }
-    public void setStatus(ContractStatus status) { this.status = status; }
+    public String getLocalFilePath()          { return localFilePath; }
+    public void setLocalFilePath(String v)    { this.localFilePath = v; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public Integer getApprovedBy() { return approvedBy; }
-    public void setApprovedBy(Integer approvedBy) { this.approvedBy = approvedBy; }
+    // ── toString ──────────────────────────────────────────────────────────
 
     @Override
     public String toString() {
         return "InsuredContract{" +
                 "id=" + id +
-                ", contractNumber='" + contractNumber + '\'' +
-                ", assetId=" + assetId +
-                ", userId=" + userId +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", premiumAmount=" + premiumAmount +
-                ", coverageAmount=" + coverageAmount +
+                ", assetRef='" + assetRef + '\'' +
+                ", boldSignDocumentId='" + boldSignDocumentId + '\'' +
                 ", status=" + status +
                 ", createdAt=" + createdAt +
-                ", approvedBy=" + approvedBy +
+                ", signedAt=" + signedAt +
+                ", localFilePath='" + localFilePath + '\'' +
                 '}';
     }
 }

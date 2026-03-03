@@ -1,12 +1,15 @@
 package controller;
 
 import javafx.application.Platform;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Duration;
 import tn.esprit.dao.ContractRequestDAO;
 import tn.esprit.dao.InsurancePackageDAO;
 import tn.esprit.dao.InsuredAssetDAO;
@@ -22,7 +25,10 @@ import tn.esprit.services.BoldSignService;
 import tn.esprit.services.SessionManager;
 import tn.esprit.services.PDFService;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
@@ -33,7 +39,7 @@ import java.util.function.UnaryOperator;
  */
 public class AdminDashboardController {
 
-    //    Contract Requests tab                                            
+    //    Contract Requests tab
     @FXML private TableView<ContractRequest>                  requestsTable;
     @FXML private TableColumn<ContractRequest, Integer>       reqColId, reqColUserId, reqColAssetId, reqColPackageId;
     @FXML private TableColumn<ContractRequest, Double>        reqColPremium;
@@ -41,9 +47,16 @@ public class AdminDashboardController {
     @FXML private TableColumn<ContractRequest, LocalDateTime> reqColCreatedAt;
     @FXML private Button        approveBtn, rejectBtn;
     @FXML private Label         pendingCountLabel, approvedCountLabel, rejectedCountLabel, signedCountLabel;
+    @FXML private Label         autoRefreshLabel, lastRefreshLabel;
+    @FXML private Button        manualRefreshBtn;
     @FXML private ComboBox<String> requestStatusFilter;
 
-    //    Manage Packages tab                                              
+    /** Polls the DB every POLL_INTERVAL_SECONDS and refreshes the table if data changed. */
+    private static final int POLL_INTERVAL_SECONDS = 5;
+    private Timeline          autoRefreshTimeline;
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    //    Manage Packages tab
     @FXML private TextField  pkgName, pkgBasePrice, pkgRiskMultiplier, pkgDurationMonths;
     @FXML private TextArea   pkgDescription, pkgCoverageDetails;
     @FXML private ComboBox<String> pkgAssetType;
@@ -111,6 +124,115 @@ public class AdminDashboardController {
         refreshRolesTable();
 
         setPkgEditMode(false);
+        startAutoRefresh();
+    }
+
+    // ── Auto-refresh (polling) ────────────────────────────────────────────────
+
+    /**
+     * Starts a JavaFX Timeline that fires every POLL_INTERVAL_SECONDS seconds on the
+     * JavaFX Application Thread.  Each tick:
+     *   1. Fetches fresh data from the DB in a daemon background thread.
+     *   2. Back on the FX thread: compares with what is currently shown.
+     *   3. Only calls setAll() if something actually changed → no visual flicker.
+     *
+     * The timeline is stopped when the scene's window closes so it does not
+     * keep a reference to the controller after the scene is destroyed.
+     */
+    private void startAutoRefresh() {
+        autoRefreshTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(POLL_INTERVAL_SECONDS), e -> pollContractRequests())
+        );
+        autoRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        autoRefreshTimeline.play();
+
+        // Stop the timer when the table's scene/window is closed
+        requestsTable.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.setOnHidden(ev -> stopAutoRefresh());
+                    }
+                });
+            }
+        });
+    }
+
+    private void stopAutoRefresh() {
+        if (autoRefreshTimeline != null) {
+            autoRefreshTimeline.stop();
+            System.out.println("[AutoRefresh] Poller stopped.");
+        }
+    }
+
+    /**
+     * Runs the DB fetch on a background thread to avoid blocking the JavaFX thread,
+     * then updates the UI on the FX thread only if data actually changed.
+     */
+    private void pollContractRequests() {
+        Thread pollThread = new Thread(() -> {
+            try {
+                List<ContractRequest> fresh = new ContractRequestDAO().readAll();
+                Platform.runLater(() -> {
+                    // Smart diff: compare IDs+statuses to avoid unnecessary redraws
+                    boolean changed = fresh.size() != requests.size();
+                    if (!changed) {
+                        for (int i = 0; i < fresh.size(); i++) {
+                            if (fresh.get(i).getId() != requests.get(i).getId()
+                                || !Objects.equals(fresh.get(i).getStatus(), requests.get(i).getStatus())) {
+                                changed = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (changed) {
+                        System.out.println("[AutoRefresh] Change detected – updating table.");
+                        // Preserve selection: re-select the same row by ID after refresh
+                        int selectedId = selectedRequest != null ? selectedRequest.getId() : -1;
+                        requests.setAll(fresh);
+                        updateStatusCountLabels(fresh);
+                        // Restore selection if the row still exists
+                        if (selectedId != -1) {
+                            for (ContractRequest cr : requests) {
+                                if (cr.getId() == selectedId) {
+                                    requestsTable.getSelectionModel().select(cr);
+                                    selectedRequest = cr;
+                                    boolean isPending = cr.getStatus() == RequestStatus.PENDING;
+                                    approveBtn.setDisable(!isPending);
+                                    rejectBtn.setDisable(!isPending);
+                                    break;
+                                }
+                            }
+                        }
+                        // Flash the live indicator gold briefly
+                        flashLiveIndicator();
+                    }
+
+                    // Always update last-refresh timestamp
+                    lastRefreshLabel.setText("last: " + LocalTime.now().format(TIME_FMT));
+                });
+            } catch (Exception ex) {
+                System.out.println("[AutoRefresh] Poll error: " + ex.getMessage());
+            }
+        }, "admin-poll-thread");
+        pollThread.setDaemon(true);
+        pollThread.start();
+    }
+
+    /** Briefly turns the LIVE dot gold to signal a change was detected. */
+    private void flashLiveIndicator() {
+        autoRefreshLabel.setStyle("-fx-text-fill:#f5c800;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;-fx-padding:4 6 0 0;");
+        new Timeline(new KeyFrame(Duration.seconds(1), e ->
+            autoRefreshLabel.setStyle("-fx-text-fill:#33dd77;-fx-font-size:10px;-fx-font-weight:900;-fx-letter-spacing:1.0;-fx-padding:4 6 0 0;")
+        )).play();
+    }
+
+    /** Manual refresh button handler. */
+    @FXML
+    private void handleManualRefresh() {
+        refreshRequestsTable();
+        lastRefreshLabel.setText("last: " + LocalTime.now().format(TIME_FMT));
     }
 
     //                                                                     
