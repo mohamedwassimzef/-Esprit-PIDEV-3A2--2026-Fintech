@@ -16,6 +16,7 @@ import tn.esprit.enums.Currency;
 import tn.esprit.enums.ReferenceType;
 import tn.esprit.enums.TransactionStatus;
 import tn.esprit.enums.TransactionType;
+import tn.esprit.services.ContentModerationService;
 import tn.esprit.services.Payment;
 import tn.esprit.services.SessionManager;
 
@@ -49,7 +50,9 @@ public class TransactionController {
     // ── Transaction table ────────────────────────────────────────────
     @FXML private TableView<Transaction>                  txTable;
     @FXML private TableColumn<Transaction, Integer>       txColId;
-    @FXML private TableColumn<Transaction, String>        txColType, txColCurrency, txColStatus, txColDescription, txColRefType;
+    @FXML private TableColumn<Transaction, TransactionType>   txColType;
+    @FXML private TableColumn<Transaction, TransactionStatus> txColStatus;
+    @FXML private TableColumn<Transaction, String>        txColCurrency, txColDescription, txColRefType;
     @FXML private TableColumn<Transaction, BigDecimal>    txColAmount;
     @FXML private TableColumn<Transaction, LocalDateTime> txColCreatedAt;
     @FXML private Button complainBtn, deleteTxBtn;
@@ -145,34 +148,30 @@ public class TransactionController {
         txColCurrency.setCellValueFactory(new PropertyValueFactory<>("currency"));
         txColRefType.setCellValueFactory(new PropertyValueFactory<>("referenceType"));
 
-        // Type column – read enum from row item, cell type is String
+        // Type column — enum type matches column declaration
         txColType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        txColType.setCellFactory(col -> new TableCell<Transaction, String>() {
-            @Override protected void updateItem(String item, boolean empty) {
+        txColType.setCellFactory(col -> new TableCell<Transaction, TransactionType>() {
+            @Override protected void updateItem(TransactionType item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) { setText(null); setStyle(""); return; }
-                TransactionType t = getTableRow().getItem().getType();
-                if (t == null) { setText(null); setStyle(""); return; }
-                setText(t.name());
-                setStyle(t == TransactionType.CREDIT
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.name());
+                setStyle(item == TransactionType.CREDIT
                     ? "-fx-text-fill:#33dd77;-fx-font-weight:700;"
                     : "-fx-text-fill:#ff4422;-fx-font-weight:700;");
             }
         });
 
-        // Status column – read enum from row item, cell type is String
+        // Status column — enum type matches column declaration
         txColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        txColStatus.setCellFactory(col -> new TableCell<Transaction, String>() {
-            @Override protected void updateItem(String item, boolean empty) {
+        txColStatus.setCellFactory(col -> new TableCell<Transaction, TransactionStatus>() {
+            @Override protected void updateItem(TransactionStatus item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) { setText(null); setStyle(""); return; }
-                TransactionStatus s = getTableRow().getItem().getStatus();
-                if (s == null) { setText(null); setStyle(""); return; }
-                setText(s.name());
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.name());
                 String style;
-                if (s == TransactionStatus.COMPLETED)       style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
-                else if (s == TransactionStatus.FAILED)     style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
-                else                                        style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
+                if (item == TransactionStatus.COMPLETED)   style = "-fx-text-fill:#33dd77;-fx-font-weight:700;";
+                else if (item == TransactionStatus.FAILED) style = "-fx-text-fill:#ff4422;-fx-font-weight:700;";
+                else                                       style = "-fx-text-fill:#f5c800;-fx-font-weight:700;";
                 setStyle(style);
             }
         });
@@ -302,7 +301,9 @@ public class TransactionController {
         if (orderId.isEmpty()) orderId = "ORD-" + System.currentTimeMillis();
 
         int userId = SessionManager.getInstance().getCurrentUser().getId();
-
+        /// ////////////////////////////////////////////////////////////////////
+        /// /////////////////////////////////////////////////////////////////////
+        /// ////////
         // ── Save transaction to DB with PENDING status ──
         Transaction tx = new Transaction(userId, amount, TransactionType.valueOf(type),
                 desc.isEmpty() ? "Payment via Paymee" : desc, refType, null);
@@ -479,32 +480,72 @@ public class TransactionController {
         String subject = cSubject.getText().trim();
         String details = cDetails.getText().trim();
         LocalDate date = cDate.getValue();
-        Transaction linkedTx = cTxCombo.getValue();
 
+        // ── Basic validation (fast, before the API call) ──────────────
         if (subject.isEmpty()) { showAlert(AlertType.WARNING, "Validation", "Subject is required."); return; }
         if (date == null)      { showAlert(AlertType.WARNING, "Validation", "Complaint date is required."); return; }
 
+        // ── Text to moderate: subject + details combined ──────────────
+        String textToCheck = subject + (details.isEmpty() ? "" : "\n" + details);
+
+        // ── Disable button & show loading state ───────────────────────
+        submitComplaintBtn.setDisable(true);
+        submitComplaintBtn.setText("Checking content...");
+
         int userId = SessionManager.getInstance().getCurrentUser().getId();
+        boolean editMode  = complaintEditMode;
+        Complaint editing = selectedComplaint;
 
-        if (complaintEditMode && selectedComplaint != null) {
-            selectedComplaint.setSubject(subject);
-            selectedComplaint.setResponse(details);
-            selectedComplaint.setComplaintDate(date);
-            boolean ok = complaintDAO.update(selectedComplaint);
-            showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR, "Complaint",
-                ok ? "Complaint updated." : "Update failed.");
-        } else {
-            Complaint c = new Complaint(subject, date, userId);
-            // Store details in response field (description) — used until admin replies
-            c.setResponse(details.isEmpty() ? null : details);
-            boolean ok = complaintDAO.create(c);
-            showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR, "Complaint",
-                ok ? "Complaint submitted successfully." : "Submission failed.");
-        }
+        // ── Run moderation in background thread ───────────────────────
+        Thread moderationThread = new Thread(() -> {
+            ContentModerationService moderator = new ContentModerationService();
+            ContentModerationService.ModerationResult result;
 
-        refreshComplaints(getComplaintFilter());
-        mainTabs.getSelectionModel().select(complaintListTab);
-        clearComplaintForm();
+            try {
+                result = moderator.analyse(textToCheck);
+            } catch (Exception ex) {
+                // API unreachable or misconfigured — log and allow submission
+                System.out.println("[Moderation] API error (allowing submission): " + ex.getMessage());
+                result = null;
+            }
+
+            final ContentModerationService.ModerationResult finalResult = result;
+
+            Platform.runLater(() -> {
+                // Re-enable the button
+                submitComplaintBtn.setDisable(false);
+                submitComplaintBtn.setText(editMode ? "Update Complaint" : "Submit Complaint");
+
+                // ── If flagged → show reason and stop ──────────────────
+                if (finalResult != null && finalResult.isFlagged()) {
+                    showAlert(AlertType.ERROR, "Content Moderation", finalResult.getReason());
+                    return;
+                }
+
+                // ── Not flagged (or API unavailable) → save ────────────
+                if (editMode && editing != null) {
+                    editing.setSubject(subject);
+                    editing.setResponse(details.isEmpty() ? null : details);
+                    editing.setComplaintDate(date);
+                    boolean ok = complaintDAO.update(editing);
+                    showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR, "Complaint",
+                        ok ? "Complaint updated." : "Update failed.");
+                } else {
+                    Complaint c = new Complaint(subject, date, userId);
+                    c.setResponse(details.isEmpty() ? null : details);
+                    boolean ok = complaintDAO.create(c);
+                    showAlert(ok ? AlertType.INFORMATION : AlertType.ERROR, "Complaint",
+                        ok ? "Complaint submitted successfully." : "Submission failed.");
+                }
+
+                refreshComplaints(getComplaintFilter());
+                mainTabs.getSelectionModel().select(complaintListTab);
+                clearComplaintForm();
+            });
+        }, "moderation-thread");
+
+        moderationThread.setDaemon(true);
+        moderationThread.start();
     }
 
     @FXML private void handleDeleteComplaint() {

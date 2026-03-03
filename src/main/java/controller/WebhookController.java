@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.dao.ContractRequestDAO;
 import tn.esprit.dao.InsuredContractDAO;
 import tn.esprit.entities.ContractRequest;
+import tn.esprit.entities.InsuredContract;
 import tn.esprit.enums.RequestStatus;
-import tn.esprit.services.SignedContractProcessor;
 
 /**
  * Spring Boot REST controller that receives BoldSign webhook events.
@@ -34,9 +34,8 @@ import tn.esprit.services.SignedContractProcessor;
 @RequestMapping("/webhook")
 public class WebhookController {
 
-    private final ContractRequestDAO      contractRequestDAO      = new ContractRequestDAO();
-    private final InsuredContractDAO      insuredContractDAO      = new InsuredContractDAO();
-    private final SignedContractProcessor signedContractProcessor = new SignedContractProcessor();
+    private final ContractRequestDAO contractRequestDAO = new ContractRequestDAO();
+    private final InsuredContractDAO insuredContractDAO = new InsuredContractDAO();
 
     /**
      * Main BoldSign webhook receiver.
@@ -116,26 +115,24 @@ public class WebhookController {
     // ── Status updaters ─────────────────────────────────────────────
 
     private void markAsSigned(String documentId) {
-        System.out.println("[Webhook] markAsSigned: " + documentId);
+        System.out.println("[Webhook] Looking up request for documentId: " + documentId);
 
-        // 1. Update contract_request.status → SIGNED
+        // 1. Update contract_request status → SIGNED
         ContractRequest req = contractRequestDAO.findByBoldSignDocumentId(documentId);
         if (req == null) {
             System.out.println("[Webhook] No ContractRequest found for documentId: " + documentId);
         } else {
             System.out.println("[Webhook] Found ContractRequest #" + req.getId()
-                    + " (status: " + req.getStatus() + ")");
+                    + " (current status: " + req.getStatus() + ")");
             boolean ok = contractRequestDAO.updateStatus(req.getId(), RequestStatus.SIGNED);
             System.out.println("[Webhook] ContractRequest #" + req.getId()
-                    + (ok ? " -> SIGNED" : " -> update FAILED"));
+                    + (ok ? " -> SIGNED" : " -> DB update FAILED"));
         }
 
-        // 2. Full post-sign processing:
-        //    - resolve asset reference from the ContractRequest
-        //    - ensure user folder  contracts/{name}_{id}/  exists  (thread-safe)
-        //    - download signed PDF  →  contracts/{name}_{id}/{documentId}.pdf
-        //    - create / update insured_contract row with filePath
-        signedContractProcessor.process(documentId);
+        // 2. Update insured_contract status → SIGNED + set signed_at
+        boolean icOk = insuredContractDAO.markAsSigned(documentId);
+        System.out.println("[Webhook] InsuredContract markAsSigned(" + documentId + "): "
+                + (icOk ? "SIGNED" : "not found or failed"));
     }
 
     private void markAsDeclined(String documentId) {

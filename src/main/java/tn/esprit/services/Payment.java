@@ -7,8 +7,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class Payment {
-
-    private static final String API_KEY = "0d2217842d3c8a1a9639bea1e6e0272f6ec93e4f";
+    //0d2217842d3c8a1a9639bea1e6e0272f6ec93e4f
+    private static final String API_KEY = "68562c72da6f425ca8549a6807a535fe5c0d89e0";
     private static final String CREATE_PAYMENT_URL = "https://sandbox.paymee.tn/api/v2/payments/create";
 
     // 1. Define a Record for the request body (Clean & Modern JDK 17)
