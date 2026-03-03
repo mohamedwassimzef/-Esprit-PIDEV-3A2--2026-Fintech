@@ -40,7 +40,7 @@ public class LoanController {
     @FXML private TabPane mainTabs;
     @FXML private Tab loanListTab, loanFormTab, repaymentListTab, repaymentFormTab;
 
-    // ── Loan table ───────────────────────────────────────────────
+    // -- Loan table --
     @FXML private TableView<Loan>                  loanTable;
     @FXML private TableColumn<Loan, Integer>       lColId;
     @FXML private TableColumn<Loan, BigDecimal>    lColAmount, lColInterestRate, lColMonthly, lColTotalCost;
@@ -607,6 +607,7 @@ public class LoanController {
     @FXML private void handleBackHome()    { SceneManager.switchScene("/View/Home.fxml",                    "FinTech – Home"); }
     @FXML private void handleLogout()      { SessionManager.getInstance().logout(); SceneManager.switchScene("/View/Login.fxml", "Login"); }
 }
+
 
 
 

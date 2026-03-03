@@ -1,0 +1,100 @@
+package tn.esprit.services;
+
+        import jakarta.mail.*;
+        import jakarta.mail.internet.*;
+
+        import java.time.LocalDateTime;
+        import java.time.format.DateTimeFormatter;
+        import java.util.Properties;
+
+        /**
+        * EmailService — all outgoing emails for FinTech Portal.
+        *
+        * ── SETUP (do this once) ──────────────────────────────────────────────
+        * 1. Go to myaccount.google.com → Security → App passwords
+        * 2. Create one named "FinTech", copy the 16-char password
+        * 3. Paste it into APP_PASSWORD below (never commit it to git)
+        * ─────────────────────────────────────────────────────────────────────
+        *
+        * Emails provided:
+        *   sendVerificationEmail()   — 6-digit code after registration
+        *   sendPasswordResetEmail()  — 6-digit code for forgot password
+        *   sendLoginNotification()   — security alert after each login
+        */
+        public class EmailService {
+
+        private static final String SENDER_EMAIL = "yasmine912003@gmail.com";
+        private static final String APP_PASSWORD = "lnpn eawa dwhw basw";
+        private static final String SENDER_NAME  = "FinTech Portal";
+
+        // brand colours — match your existing UI
+        private static final String PRIMARY  = "#1E3A8A";
+        private static final String DARK     = "#111827";
+        private static final String LIGHT_BG = "#F3F4F6";
+
+        // ── session ───────────────────────────────────────────────────────
+
+        private static Session buildSession() {
+        Properties p = new Properties();
+        p.put("mail.smtp.host",              "smtp.gmail.com");
+        p.put("mail.smtp.port",              "587");
+        p.put("mail.smtp.auth",              "true");
+        p.put("mail.smtp.starttls.enable",   "true");
+        p.put("mail.smtp.connectiontimeout", "10000");
+        p.put("mail.smtp.timeout",           "10000");
+
+        return Session.getInstance(p, new Authenticator() {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(SENDER_EMAIL, APP_PASSWORD);
+        }
+        });
+        }
+
+        // ── internal send ─────────────────────────────────────────────────
+
+        private static void send(String to, String subject, String html) {
+        // Run on a background thread so the UI never freezes waiting for SMTP
+        new Thread(() -> {
+        try {
+        MimeMessage msg = new MimeMessage(buildSession());
+        msg.setFrom(new InternetAddress(SENDER_EMAIL, SENDER_NAME));
+        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+        msg.setSubject(subject, "UTF-8");
+
+        MimeBodyPart body = new MimeBodyPart();
+        body.setContent(html, "text/html; charset=UTF-8");
+
+        MimeMultipart mp = new MimeMultipart();
+        mp.addBodyPart(body);
+        msg.setContent(mp);
+
+        Transport.send(msg);
+        System.out.println("[Email] ✓ Sent to " + to);
+        } catch (Exception e) {
+        System.err.println("[Email] ✗ Failed to " + to + ": " + e.getMessage());
+        }
+        }).start();
+        }
+
+        // ── public methods ────────────────────────────────────────────────
+
+        /** Call after successful registration — user enters this code to verify. */
+        public static void sendVerificationEmail(String toEmail, String userName, String code) {
+        send(toEmail, "Your FinTech Portal verification code",
+        verificationHtml(userName, code));
+        }
+
+        /** Call when user submits forgot-password form — user enters this to reset. */
+        public static void sendPasswordResetEmail(String toEmail, String userName, String code) {
+        send(toEmail, "Reset your FinTech Portal password",
+        passwordResetHtml(userName, code));
+        }
+
+        /** Call after every successful login as a security notification. */
+        public static void sendLoginNotification(String toEmail, String userName) {
+        String time = LocalDateTime.now()
+        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' HH:mm"));
+        send(toEmail, "New sign-in to your FinTech Portal account",
+        loginNotifHtml(userName, time));
+        }

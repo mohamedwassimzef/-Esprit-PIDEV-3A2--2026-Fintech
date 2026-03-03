@@ -211,7 +211,7 @@ public class AdminDashboardController {
         startAutoRefresh();
     }
 
-    // ── Auto-refresh (polling) ────────────────────────────────────────────────
+    // -- Auto-refresh (polling) --
 
     /**
      * Starts a JavaFX Timeline that fires every POLL_INTERVAL_SECONDS seconds on the
@@ -459,7 +459,7 @@ public class AdminDashboardController {
     private void handleApproveRequest() {
         if (selectedRequest == null) return;
 
-        // ── Snapshot the request immediately before any refresh clears selectedRequest ──
+        // -- Snapshot the request immediately before any refresh clears selectedRequest --
         final ContractRequest req = selectedRequest;
 
         // 1. Update status to APPROVED in DB
@@ -856,9 +856,9 @@ public class AdminDashboardController {
         rolesTable.getSelectionModel().clearSelection();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 5 – ALL TRANSACTIONS
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 5 - ALL TRANSACTIONS
+    // -------------------------------------------------------------------------
     private void setupAdminTransactionsTable() {
         adminTxColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminTxColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
@@ -913,9 +913,9 @@ public class AdminDashboardController {
         adminTxDebitLabel.setText("Debit: "  + debit.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()  + " TND");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 6 – ALL COMPLAINTS
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 6 - ALL COMPLAINTS
+    // -------------------------------------------------------------------------
     private void setupAdminComplaintsTable() {
         adminCColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminCColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
@@ -952,9 +952,9 @@ public class AdminDashboardController {
         adminComplaintResolvedLabel.setText("Resolved: " + resolved);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 7 – ALL BUDGETS
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 7 - ALL BUDGETS
+    // -------------------------------------------------------------------------
     private void setupAdminBudgetsTable() {
         adminBColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminBColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
@@ -974,9 +974,9 @@ public class AdminDashboardController {
         adminBudgetTotalLabel.setText("Total: " + all.size());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 8 – ALL LOANS
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 8 - ALL LOANS
+    // -------------------------------------------------------------------------
     private void setupAdminLoansTable() {
         adminLColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminLColUserId.setCellValueFactory(new PropertyValueFactory<>("userId"));
@@ -1013,9 +1013,9 @@ public class AdminDashboardController {
         adminLoanActiveLabel.setText("Active: " + active);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 9 – ALL REPAYMENTS
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 9 - ALL REPAYMENTS
+    // -------------------------------------------------------------------------
     private void setupAdminRepaymentsTable() {
         adminRpColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminRpColLoanId.setCellValueFactory(new PropertyValueFactory<>("loanId"));
@@ -1052,9 +1052,9 @@ public class AdminDashboardController {
         adminRepaymentPendingLabel.setText("Pending: " + pending);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TAB 10 – ALL EXPENSES
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TAB 10 - ALL EXPENSES
+    // -------------------------------------------------------------------------
     private void setupAdminExpensesTable() {
         adminExColId.setCellValueFactory(new PropertyValueFactory<>("id"));
         adminExColBudgetId.setCellValueFactory(new PropertyValueFactory<>("budgetId"));

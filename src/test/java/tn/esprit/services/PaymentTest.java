@@ -1,4 +1,4 @@
-package tn.esprit.services;
+in ogpackage tn.esprit.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,9 +44,9 @@ public class PaymentTest {
         System.out.println(capturedOut);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
     //  HELPER
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
 
     /**
      * Calls Payment.createPayment and returns the raw JSON response body
@@ -73,12 +73,12 @@ public class PaymentTest {
         return output.substring(idx + marker.length()).trim();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 1 – Happy path
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 1 - Happy path
+    // -------------------------------------------------------------------------
     @Test
     @Order(1)
-    @DisplayName("1. Valid payment data → API responds with status 200 and status:true")
+    @DisplayName("1. Valid payment data -> API responds with status 200 and status:true")
     void createPayment_validData_returnsSuccess() throws Exception {
         String orderId = "TEST-" + System.currentTimeMillis();
 
@@ -99,14 +99,14 @@ public class PaymentTest {
         // Paymee sandbox wraps in {"status":true/false, "data":{...}}
         if (root.has("status")) {
             System.out.println("[TEST 1] status field = " + root.get("status").asText());
-            // Sandbox may return false for certain demo keys — we just assert it responded
+            // Sandbox may return false for certain demo keys -- we just assert it responded
             Assertions.assertNotNull(root.get("status"), "Response must contain a 'status' field");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 2 – Auto-generated order ID
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 2 - Auto-generated order ID
+    // -------------------------------------------------------------------------
     @Test
     @Order(2)
     @DisplayName("2. Auto-generated order_id (ORD-timestamp) is accepted by the API")
@@ -127,9 +127,9 @@ public class PaymentTest {
         Assertions.assertNotNull(root, "Response should be valid JSON for auto-generated order ID");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 3 – Debit transaction
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 3 - Debit transaction
+    // -------------------------------------------------------------------------
     @Test
     @Order(3)
     @DisplayName("3. DEBIT type transaction with loan repayment note")
@@ -137,7 +137,7 @@ public class PaymentTest {
         String orderId = "LOAN-" + System.currentTimeMillis();
 
         String json = callAndCapture(
-            1500.0, "Monthly loan repayment – Loan #42",
+            1500.0, "Monthly loan repayment - Loan #42",
             "Sami", "Hamdi",
             "sami.hamdi@example.com", "+21654321098",
             orderId
@@ -150,9 +150,9 @@ public class PaymentTest {
         Assertions.assertNotNull(root, "Response should be valid JSON for debit transaction");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 4 – payment_url is present in a successful response
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 4 - payment_url is present in a successful response
+    // -------------------------------------------------------------------------
     @Test
     @Order(4)
     @DisplayName("4. Successful response contains payment_url inside data object")
@@ -160,7 +160,7 @@ public class PaymentTest {
         String orderId = "URL-TEST-" + System.currentTimeMillis();
 
         String json = callAndCapture(
-            75.0, "Test – checking payment URL",
+            75.0, "Test - checking payment URL",
             "Leila", "Mansouri",
             "leila@example.com", "+21622334455",
             orderId
@@ -185,13 +185,13 @@ public class PaymentTest {
                         "payment_url should start with http");
             }
         } else {
-            System.out.println("[TEST 4] API returned status:false – skipping payment_url check");
+            System.out.println("[TEST 4] API returned status:false - skipping payment_url check");
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 5 – Response is always valid JSON regardless of outcome
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 5 - Response is always valid JSON regardless of outcome
+    // -------------------------------------------------------------------------
     @Test
     @Order(5)
     @DisplayName("5. API always returns valid JSON (even for error cases)")
@@ -218,9 +218,9 @@ public class PaymentTest {
                 "Response must be a JSON object or array");
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 6 – Minimum amount boundary
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 6 - Minimum amount boundary
+    // -------------------------------------------------------------------------
     @Test
     @Order(6)
     @DisplayName("6. Minimum positive amount (0.001 TND) is sent without throwing an exception")
@@ -239,9 +239,9 @@ public class PaymentTest {
         );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  TEST 7 – Large amount
-    // ─────────────────────────────────────────────────────────────────────────
+    // -------------------------------------------------------------------------
+    //  TEST 7 - Large amount
+    // -------------------------------------------------------------------------
     @Test
     @Order(7)
     @DisplayName("7. Large amount (100,000 TND) is sent without throwing an exception")

@@ -151,34 +151,94 @@
                 <!-- TAB 3: INSURANCE PACKAGES -->
                 <Tab fx:id="packagesTab" text="Insurance Packages">
                     <content>
-                        <VBox spacing="0.0" fillWidth="true">
-                            <Label text="Choose a Package Type"
-                                   style="-fx-text-fill:#f5c800;-fx-font-size:16px;-fx-font-weight:800;-fx-padding:18 24 10 24;"/>
-                            <HBox spacing="20.0" alignment="CENTER" style="-fx-padding:0 24 0 24;">
-                                <VBox fx:id="carCard" styleClass="pkg-type-card" onMouseClicked="#handleSelectCarPackages"
-                                      HBox.hgrow="ALWAYS" alignment="CENTER" spacing="8.0" prefHeight="120.0">
-                                    <Label text="Car" style="-fx-font-size:32px;"/>
-                                    <Label text="CAR" style="-fx-text-fill:#f5c800;-fx-font-size:18px;-fx-font-weight:800;"/>
-                                    <Label text="Vehicle insurance packages" style="-fx-text-fill:#888;-fx-font-size:11px;"/>
-                                </VBox>
-                                <VBox fx:id="homeCard" styleClass="pkg-type-card" onMouseClicked="#handleSelectHomePackages"
-                                      HBox.hgrow="ALWAYS" alignment="CENTER" spacing="8.0" prefHeight="120.0">
-                                    <Label text="Home" style="-fx-font-size:32px;"/>
-                                    <Label text="HOME" style="-fx-text-fill:#f5c800;-fx-font-size:18px;-fx-font-weight:800;"/>
-                                    <Label text="Home and property packages" style="-fx-text-fill:#888;-fx-font-size:11px;"/>
-                                </VBox>
-                            </HBox>
-                            <Label text="AVAILABLE PACKAGES"
-                                   style="-fx-text-fill:#555;-fx-font-size:10px;-fx-font-weight:800;-fx-letter-spacing:1.5;-fx-padding:16 24 4 24;"/>
-                            <Region prefHeight="1.0" maxWidth="Infinity" style="-fx-background-color:#2a2a2a;" VBox.vgrow="NEVER"/>
-                            <ScrollPane fx:id="packagesScrollPane" fitToWidth="true"
-                                        hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS"
-                                        style="-fx-background:transparent;-fx-background-color:transparent;">
-                                <content>
-                                    <VBox fx:id="packagesListBox" spacing="20.0" style="-fx-padding:12 24 12 24;"/>
-                                </content>
-                            </ScrollPane>
-                        </VBox>
+                        <!-- Two-column split: packages left, bot right -->
+                        <HBox fillHeight="true">
+
+                            <!-- ── LEFT: package type cards + package list ── -->
+                            <VBox HBox.hgrow="ALWAYS" spacing="0.0" fillWidth="true">
+                                <Label text="Choose a Package Type"
+                                       style="-fx-text-fill:#f5c800;-fx-font-size:16px;-fx-font-weight:800;-fx-padding:18 24 10 24;"/>
+                                <HBox spacing="20.0" alignment="CENTER" style="-fx-padding:0 24 0 24;">
+                                    <VBox fx:id="carCard" styleClass="pkg-type-card" onMouseClicked="#handleSelectCarPackages"
+                                          HBox.hgrow="ALWAYS" alignment="CENTER" spacing="8.0" prefHeight="120.0">
+                                        <Label text="Car" style="-fx-font-size:32px;"/>
+                                        <Label text="CAR" style="-fx-text-fill:#f5c800;-fx-font-size:18px;-fx-font-weight:800;"/>
+                                        <Label text="Vehicle insurance packages" style="-fx-text-fill:#888;-fx-font-size:11px;"/>
+                                    </VBox>
+                                    <VBox fx:id="homeCard" styleClass="pkg-type-card" onMouseClicked="#handleSelectHomePackages"
+                                          HBox.hgrow="ALWAYS" alignment="CENTER" spacing="8.0" prefHeight="120.0">
+                                        <Label text="Home" style="-fx-font-size:32px;"/>
+                                        <Label text="HOME" style="-fx-text-fill:#f5c800;-fx-font-size:18px;-fx-font-weight:800;"/>
+                                        <Label text="Home and property packages" style="-fx-text-fill:#888;-fx-font-size:11px;"/>
+                                    </VBox>
+                                </HBox>
+                                <Label text="AVAILABLE PACKAGES"
+                                       style="-fx-text-fill:#555;-fx-font-size:10px;-fx-font-weight:800;-fx-letter-spacing:1.5;-fx-padding:16 24 4 24;"/>
+                                <Region prefHeight="1.0" maxWidth="Infinity" style="-fx-background-color:#2a2a2a;" VBox.vgrow="NEVER"/>
+                                <ScrollPane fx:id="packagesScrollPane" fitToWidth="true"
+                                            hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS"
+                                            style="-fx-background:transparent;-fx-background-color:transparent;">
+                                    <content>
+                                        <VBox fx:id="packagesListBox" spacing="20.0" style="-fx-padding:12 24 12 24;"/>
+                                    </content>
+                                </ScrollPane>
+                            </VBox>
+
+                            <!-- ── DIVIDER ── -->
+                            <Region prefWidth="1.0" minWidth="1.0" maxWidth="1.0"
+                                    style="-fx-background-color:#2a2a2a;"/>
+
+                            <!-- ── RIGHT: FinBot chat panel ── -->
+                            <VBox fx:id="botPanel" prefWidth="320.0" minWidth="320.0" maxWidth="320.0"
+                                  spacing="0.0" fillWidth="true"
+                                  style="-fx-background-color:#111;">
+
+                                <!-- Header -->
+                                <HBox alignment="CENTER_LEFT" spacing="8.0"
+                                      style="-fx-background-color:#1a1a1a;-fx-padding:10 14 10 14;-fx-border-color:#2a2a2a;-fx-border-width:0 0 1 0;">
+                                    <Label text="🤖" style="-fx-font-size:16px;"/>
+                                    <VBox spacing="1.0" HBox.hgrow="ALWAYS">
+                                        <Label text="FinBot"
+                                               style="-fx-text-fill:#f5c800;-fx-font-size:13px;-fx-font-weight:900;"/>
+                                        <Label text="Insurance Advisor"
+                                               style="-fx-text-fill:#555;-fx-font-size:10px;"/>
+                                    </VBox>
+                                    <Button fx:id="botResetBtn" text="↺"
+                                            mnemonicParsing="false" onAction="#handleBotReset"
+                                            style="-fx-background-color:transparent;-fx-border-color:#333;-fx-text-fill:#888;-fx-border-radius:4;-fx-font-size:12px;-fx-padding:3 8 3 8;-fx-cursor:hand;"/>
+                                </HBox>
+
+                                <!-- Chat history -->
+                                <ScrollPane fx:id="botScrollPane" fitToWidth="true"
+                                            hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                            VBox.vgrow="ALWAYS"
+                                            style="-fx-background:transparent;-fx-background-color:transparent;">
+                                    <content>
+                                        <VBox fx:id="botChatBox" spacing="8.0"
+                                              style="-fx-padding:12 10 12 10;"/>
+                                    </content>
+                                </ScrollPane>
+
+                                <!-- Typing indicator -->
+                                <Label fx:id="botTypingLabel" text="FinBot is typing..."
+                                       visible="false" managed="false"
+                                       style="-fx-text-fill:#555;-fx-font-size:10px;-fx-font-style:italic;-fx-padding:0 12 4 12;"/>
+
+                                <!-- Input row -->
+                                <HBox spacing="6.0"
+                                      style="-fx-padding:8 10 10 10;-fx-background-color:#1a1a1a;-fx-border-color:#2a2a2a;-fx-border-width:1 0 0 0;">
+                                    <TextField fx:id="botInputField"
+                                               HBox.hgrow="ALWAYS"
+                                               promptText="Ask me about packages…"
+                                               onAction="#handleBotSend"
+                                               style="-fx-background-color:#0d0d0d;-fx-text-fill:#f0f0f0;-fx-prompt-text-fill:#444;-fx-border-color:#2a2a2a;-fx-border-radius:4;-fx-background-radius:4;-fx-padding:7 10 7 10;"/>
+                                    <Button fx:id="botSendBtn" text="Send"
+                                            mnemonicParsing="false" onAction="#handleBotSend"
+                                            style="-fx-background-color:#f5c800;-fx-text-fill:#000;-fx-font-weight:800;-fx-background-radius:4;-fx-padding:7 14 7 14;-fx-cursor:hand;"/>
+                                </HBox>
+                            </VBox>
+
+                        </HBox>
                     </content>
                 </Tab>
 

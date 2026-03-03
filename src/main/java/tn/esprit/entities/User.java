@@ -15,12 +15,21 @@ public class User {
     private LocalDateTime updatedAt;
     private boolean isVerified;
     private String phone;
+    // New fields
+    private String verificationCode;
+    private boolean googleAccount;
+    private LocalDateTime lastLogin;
+    private boolean faceRegistered;
 
-    // Constructors
+    // -- Constructors ----------------------------------------------------------
+
     public User() {}
 
+    /** Full constructor (all columns). */
     public User(int id, String name, String email, String passwordHash, int roleId,
-                LocalDateTime createdAt, LocalDateTime updatedAt, boolean isVerified, String phone) {
+                LocalDateTime createdAt, LocalDateTime updatedAt, boolean isVerified,
+                String phone, String verificationCode, boolean googleAccount,
+                LocalDateTime lastLogin, boolean faceRegistered) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -30,8 +39,23 @@ public class User {
         this.updatedAt = updatedAt;
         this.isVerified = isVerified;
         this.phone = phone;
+        this.verificationCode = verificationCode;
+        this.googleAccount = googleAccount;
+        this.lastLogin = lastLogin;
+        this.faceRegistered = faceRegistered;
     }
 
+    /**
+     * Legacy constructor kept for backward compatibility
+     * (id + original 8 fields, new fields default to safe values).
+     */
+    public User(int id, String name, String email, String passwordHash, int roleId,
+                LocalDateTime createdAt, LocalDateTime updatedAt, boolean isVerified, String phone) {
+        this(id, name, email, passwordHash, roleId, createdAt, updatedAt, isVerified,
+             phone, null, false, null, false);
+    }
+
+    /** Creation constructor (no id / timestamps). */
     public User(String name, String email, String passwordHash, int roleId, String phone) {
         this.name = name;
         this.email = email;
@@ -40,7 +64,8 @@ public class User {
         this.phone = phone;
     }
 
-    // Getters & Setters
+    // -- Getters & Setters -----------------------------------------------------
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -68,19 +93,34 @@ public class User {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
+
+    public boolean isGoogleAccount() { return googleAccount; }
+    public void setGoogleAccount(boolean googleAccount) { this.googleAccount = googleAccount; }
+
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
+
+    public boolean isFaceRegistered() { return faceRegistered; }
+    public void setFaceRegistered(boolean faceRegistered) { this.faceRegistered = faceRegistered; }
+
+    // -- toString --------------------------------------------------------------
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", passwordHash='" + passwordHash + '\'' +
                 ", roleId=" + roleId +
                 ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
                 ", isVerified=" + isVerified +
                 ", phone='" + phone + '\'' +
+                ", verificationCode='" + verificationCode + '\'' +
+                ", googleAccount=" + googleAccount +
+                ", lastLogin=" + lastLogin +
+                ", faceRegistered=" + faceRegistered +
                 '}';
     }
 }
-

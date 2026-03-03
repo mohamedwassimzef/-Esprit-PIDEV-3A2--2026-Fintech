@@ -13,31 +13,31 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
- * ══════════════════════════════════════════════════════════════════════════════
- *  Content Moderation Service — Sightengine Text Moderation API
- * ══════════════════════════════════════════════════════════════════════════════
+ * ==============================================================================
+ *  Content Moderation Service -- Sightengine Text Moderation API
+ * ==============================================================================
  *
  *  API USED  : Sightengine Text Moderation  (https://sightengine.com)
  *  ENDPOINT  : POST https://api.sightengine.com/1.0/text/check.json
- *  COST      : 100% FREE — 2000 calls/month, NO credit card required
+ *  COST      : 100% FREE -- 2000 calls/month, NO credit card required
  *
- *  ── MODE RULES vs MODE ML ────────────────────────────────────────────────────
+ *  -- MODE RULES vs MODE ML --
  *
- *  mode=ml   → Deep learning model, understands context.
- *              The word "kill" in "kill it on the dance floor" → NOT flagged.
+ *  mode=ml   -> Deep learning model, understands context.
+ *              The word "kill" in "kill it on the dance floor" -> NOT flagged.
  *              Problem: racial slurs used directly can score below 0.7 threshold.
  *
- *  mode=rules → Dictionary-based pattern matching with millions of variations.
- *              "fuck", "nigga", "n*gga", racial slurs → ALWAYS flagged.
+ *  mode=rules -> Dictionary-based pattern matching with millions of variations.
+ *              "fuck", "nigga", "n*gga", racial slurs -> ALWAYS flagged.
  *              Returns intensity: "low" / "medium" / "high" instead of score.
  *              We block on ANY match of intensity "medium" or "high".
  *
- *  ── CATEGORIES DETECTED (mode=rules) ────────────────────────────────────────
- *  profanity   → insults, obscenity, vulgar words (fuck, shit, etc.)
- *  extremism   → white supremacist terms, racial slurs, hate group references
- *  violence    → threats, calls to harm
+ *  -- CATEGORIES DETECTED (mode=rules) --
+ *  profanity   -> insults, obscenity, vulgar words (fuck, shit, etc.)
+ *  extremism   -> white supremacist terms, racial slurs, hate group references
+ *  violence    -> threats, calls to harm
  *
- *  ── RESPONSE FORMAT (mode=rules) ────────────────────────────────────────────
+ *  -- RESPONSE FORMAT (mode=rules) --
  *  {
  *    "status": "success",
  *    "profanity": {
@@ -53,22 +53,22 @@ import java.time.Duration;
  *    "violence": { "matches": [] }
  *  }
  *
- * ══════════════════════════════════════════════════════════════════════════════
+ * ==============================================================================
  */
 public class ContentModerationService {
 
-    // ── ⚙️  YOUR SIGHTENGINE CREDENTIALS ─────────────────────────────────────
+    // -- YOUR SIGHTENGINE CREDENTIALS --
     private static final String API_USER   = "53418850";
     private static final String API_SECRET = "7PFYeMEziBmNn8PH2KLQ5JzKepYtARTR";
-    // ─────────────────────────────────────────────────────────────────────────
+    // --
 
     private static final String API_URL = "https://api.sightengine.com/1.0/text/check.json";
 
     /**
      * Intensity levels returned by rules mode:
-     *   "low"    → mild content (might be acceptable)
-     *   "medium" → clearly inappropriate
-     *   "high"   → very offensive, always block
+     *   "low"    -> mild content (might be acceptable)
+     *   "medium" -> clearly inappropriate
+     *   "high"   -> very offensive, always block
      *
      * We block on "medium" AND "high" (= skip "low" only).
      */
@@ -78,9 +78,9 @@ public class ContentModerationService {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    // ══════════════════════════════════════════════════════════════════════════
+    // --------------------------------------------------------------------------
     //  Result class
-    // ══════════════════════════════════════════════════════════════════════════
+    // --------------------------------------------------------------------------
 
     public static class ModerationResult {
         private final boolean flagged;
@@ -108,9 +108,9 @@ public class ContentModerationService {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    //  Main method — called from AddComplaintController background thread
-    // ══════════════════════════════════════════════════════════════════════════
+    // --------------------------------------------------------------------------
+    //  Main method -- called from AddComplaintController background thread
+    // --------------------------------------------------------------------------
 
     public ModerationResult analyse(String text) {
 
@@ -123,11 +123,11 @@ public class ContentModerationService {
         }
 
         try {
-            // ── Build POST form body ──────────────────────────────────────────
+            // -- Build POST form body --
             //
-            // mode=rules   → dictionary-based, reliable slur detection
-            // categories   → what to check (profanity + extremism + violence)
-            // lang=en,fr   → supported languages (no Arabic in rules mode)
+            // mode=rules   -> dictionary-based, reliable slur detection
+            // categories   -> what to check (profanity + extremism + violence)
+            // lang=en,fr   -> supported languages (no Arabic in rules mode)
             //
             String formBody = "text="       + URLEncoder.encode(text, StandardCharsets.UTF_8)
                     + "&lang="       + "en,fr"
@@ -136,7 +136,7 @@ public class ContentModerationService {
                     + "&api_user="   + URLEncoder.encode(API_USER,   StandardCharsets.UTF_8)
                     + "&api_secret=" + URLEncoder.encode(API_SECRET, StandardCharsets.UTF_8);
 
-            System.out.println("📤 Sightengine [rules] → checking: "
+            System.out.println("[OUT] Sightengine [rules] -> checking: "
                     + text.substring(0, Math.min(text.length(), 80)));
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -150,8 +150,8 @@ public class ContentModerationService {
                     request, HttpResponse.BodyHandlers.ofString());
 
             int status = response.statusCode();
-            System.out.println("📥 Status: " + status);
-            System.out.println("📥 Body:   " + response.body());
+            System.out.println("[IN] Status: " + status);
+            System.out.println("[IN] Body:   " + response.body());
 
             if (status == 400) {
                 throw new RuntimeException("Identifiants API invalides (400).\nVérifiez API_USER et API_SECRET.");
@@ -180,9 +180,9 @@ public class ContentModerationService {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
+    // --------------------------------------------------------------------------
     //  Parse rules-mode response
-    // ══════════════════════════════════════════════════════════════════════════
+    // --------------------------------------------------------------------------
 
     /**
      * In rules mode, each match has:
@@ -203,12 +203,12 @@ public class ContentModerationService {
 
         // Categories + French error messages
         String[][] categories = {
-                {"profanity",  "❌ Votre message contient des grossièretés ou insultes."},
-                {"extremism",  "❌ Votre message contient des propos haineux, racistes ou discriminatoires."},
-                {"violence",   "❌ Votre message contient des menaces ou propos violents."}
+                {"profanity",  "Votre message contient des grossieretes ou insultes."},
+                {"extremism",  "Votre message contient des propos haineux, racistes ou discriminatoires."},
+                {"violence",   "Votre message contient des menaces ou propos violents."}
         };
 
-        System.out.println("📊 Sightengine matches:");
+        System.out.println("[MODERATION] Sightengine matches:");
 
         // Track the worst match found
         int    worstLevel   = 0; // 0=none, 1=low, 2=medium, 3=high
@@ -231,7 +231,7 @@ public class ContentModerationService {
                 String     type      = m.optString("type", "");
                 int        level     = intensityLevel(intensity);
 
-                System.out.printf("   [%-10s][%-15s] %-25s → %s%n",
+                System.out.printf("   [%-10s][%-15s] %-25s -> %s%n",
                         catName, type, word, intensity.toUpperCase());
 
                 if (level > worstLevel) {
@@ -243,23 +243,23 @@ public class ContentModerationService {
             }
         }
 
-        System.out.printf("📊 Worst: [%s] '%s' intensity=%s (block from %s)%n",
+        System.out.printf("[MODERATION] Worst: [%s] '%s' intensity=%s (block from %s)%n",
                 worstType, worstWord, levelName(worstLevel), BLOCK_FROM_INTENSITY.toUpperCase());
 
         // Block if intensity >= our threshold
         if (worstLevel >= intensityLevel(BLOCK_FROM_INTENSITY)) {
-            System.out.println("🚫 BLOCKED — " + worstType + " / " + levelName(worstLevel));
+            System.out.println("[BLOCKED] " + worstType + " / " + levelName(worstLevel));
             String full = worstMessage + "\n\n"
-                    + "Veuillez reformuler votre réclamation de manière respectueuse.\n"
-                    + "Les réclamations inappropriées ne peuvent pas être soumises.";
+                    + "Veuillez reformuler votre reclamation de maniere respectueuse.\n"
+                    + "Les reclamations inappropriees ne peuvent pas etre soumises.";
             return new ModerationResult(true, full, worstType, levelName(worstLevel));
         }
 
-        System.out.println("✅ Approved.");
+        System.out.println("[OK] Approved.");
         return new ModerationResult(false, "", "none", "none");
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // -- Helpers --
 
     private int intensityLevel(String intensity) {
         return switch (intensity.toLowerCase()) {

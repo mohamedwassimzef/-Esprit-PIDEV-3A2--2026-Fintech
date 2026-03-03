@@ -22,7 +22,10 @@ import tn.esprit.dao.InsuredAssetDAO;
 import tn.esprit.entities.ContractRequest;
 import tn.esprit.entities.InsurancePackage;
 import tn.esprit.entities.InsuredAsset;
+import tn.esprit.entities.User;
 import tn.esprit.enums.RequestStatus;
+import tn.esprit.services.AIService;
+import tn.esprit.services.InsuranceBotService;
 import tn.esprit.services.SessionManager;
 
 import java.math.BigDecimal;
@@ -68,6 +71,14 @@ public class UserDashboardController {
     @FXML private ScrollPane   packagesScrollPane;
     @FXML private VBox         packagesListBox;
 
+    // -- FinBot chat panel ---------------------------------------------------
+    @FXML private VBox         botPanel;
+    @FXML private ScrollPane   botScrollPane;
+    @FXML private VBox         botChatBox;
+    @FXML private TextField    botInputField;
+    @FXML private Button       botSendBtn, botResetBtn;
+    @FXML private Label        botTypingLabel;
+
     // -- Request Contract form -------------------------------------------
     @FXML private ComboBox<InsuredAsset>      contractAssetCombo;
     @FXML private ComboBox<InsurancePackage>  contractPackageCombo;
@@ -102,6 +113,9 @@ public class UserDashboardController {
     private String            currentPackageType = "car"; // "car" or "home"
     private boolean isEditMode = false;
 
+    /** Lazy-initialised the first time the user opens the Packages tab. */
+    private InsuranceBotService botService;
+
     private final Map<String, List<String>> cityAreas = new HashMap<>();
 
     // --------------------------------------------------------------------
@@ -132,6 +146,13 @@ public class UserDashboardController {
 
         setEditMode(false);
         startReqAutoRefresh();
+
+        // Lazily initialise the bot when the user first clicks the Packages tab
+        mainTabs.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab == packagesTab && botService == null) {
+                initBot();
+            }
+        });
     }
 
     // --------------------------------------------------------------------
@@ -710,6 +731,124 @@ public class UserDashboardController {
         contractPackageCombo.getSelectionModel().clearSelection();
         reqStartDate.setValue(null);
         reqPremiumField.clear(); reqDurationField.clear(); reqEndDateField.clear();
+    }
+
+    // --------------------------------------------------------------------
+    //  FINBOT – Insurance Advisor
+    // --------------------------------------------------------------------
+
+    /**
+     * Builds the InsuranceBotService with the current user, their assets, and
+     * all active packages, then shows a greeting in the chat panel.
+     * Called lazily the first time the Packages tab is opened.
+     */
+    private void initBot() {
+        User user = SessionManager.getInstance().getCurrentUser();
+        java.util.List<InsuredAsset>     userAssets  = new java.util.ArrayList<>(assets);
+        java.util.List<InsurancePackage> allPackages = new InsurancePackageDAO().findActive();
+
+        botService = new InsuranceBotService(user, userAssets, allPackages);
+
+        // Show welcome message from bot on FX thread (already on it here)
+        String greeting = user != null
+            ? "👋 Hi " + user.getName() + "! I'm FinBot, your insurance advisor.\n\n"
+              + "Tell me about the asset you'd like to insure — its type (car or home), "
+              + "value, and location — and I'll recommend the best package for you!"
+            : "👋 Hi! I'm FinBot. Tell me about your asset and I'll help you pick the right package!";
+
+        appendBotBubble(greeting);
+    }
+
+    /**
+     * Sends the user's typed message to the bot and displays both
+     * the user bubble and the bot reply in the chat box.
+     * The API call runs on a background thread so the UI never freezes.
+     */
+    @FXML
+    private void handleBotSend() {
+        if (botService == null) initBot();
+
+        String text = botInputField.getText().trim();
+        if (text.isEmpty()) return;
+
+        botInputField.clear();
+        botSendBtn.setDisable(true);
+        botInputField.setDisable(true);
+
+        // Show user bubble immediately
+        appendUserBubble(text);
+
+        // Show typing indicator
+        botTypingLabel.setVisible(true);
+        botTypingLabel.setManaged(true);
+        scrollBotToBottom();
+
+        // Call the AI on a background thread
+        Thread aiThread = new Thread(() -> {
+            String reply = botService.chat(text);
+            Platform.runLater(() -> {
+                botTypingLabel.setVisible(false);
+                botTypingLabel.setManaged(false);
+                appendBotBubble(reply.startsWith("ERROR:") ? "[!] " + reply : reply);
+                botSendBtn.setDisable(false);
+                botInputField.setDisable(false);
+                botInputField.requestFocus();
+                scrollBotToBottom();
+            });
+        }, "finbot-thread");
+        aiThread.setDaemon(true);
+        aiThread.start();
+    }
+
+    /** Reset button — clears chat history and shows a new greeting. */
+    @FXML
+    private void handleBotReset() {
+        if (botService != null) botService.reset();
+        botChatBox.getChildren().clear();
+        // Re-init to show greeting again with fresh data
+        botService = null;
+        initBot();
+    }
+
+    // -- Chat bubble helpers --
+
+    private void appendUserBubble(String text) {
+        Label lbl = new Label(text);
+        lbl.setWrapText(true);
+        lbl.setMaxWidth(250.0);
+        lbl.setStyle(
+            "-fx-background-color:#f5c800;" +
+            "-fx-text-fill:#000;" +
+            "-fx-padding:8 12 8 12;" +
+            "-fx-background-radius:12 12 2 12;" +
+            "-fx-font-size:12px;"
+        );
+
+        javafx.scene.layout.HBox row = new javafx.scene.layout.HBox(lbl);
+        row.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        botChatBox.getChildren().add(row);
+    }
+
+    private void appendBotBubble(String text) {
+        Label lbl = new Label(text);
+        lbl.setWrapText(true);
+        lbl.setMaxWidth(260.0);
+        lbl.setStyle(
+            "-fx-background-color:#1e1e1e;" +
+            "-fx-text-fill:#e0e0e0;" +
+            "-fx-padding:8 12 8 12;" +
+            "-fx-background-radius:12 12 12 2;" +
+            "-fx-font-size:12px;" +
+            "-fx-border-color:#2a2a2a;-fx-border-radius:12 12 12 2;-fx-border-width:1;"
+        );
+
+        javafx.scene.layout.HBox row = new javafx.scene.layout.HBox(lbl);
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        botChatBox.getChildren().add(row);
+    }
+
+    private void scrollBotToBottom() {
+        Platform.runLater(() -> botScrollPane.setVvalue(1.0));
     }
 
     // --------------------------------------------------------------------
