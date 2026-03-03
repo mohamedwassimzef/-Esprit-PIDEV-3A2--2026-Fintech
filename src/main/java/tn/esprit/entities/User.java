@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
  * Added fields vs original:
  *  - verificationCode   : 6-digit code emailed on registration
  *  - googleAccount      : true if created via Google OAuth
- *  - facebookAccount    : true if created via Facebook OAuth
+ *  - faceRegistered     : true if face model enrolled (OpenCV LBPH)
  *
  * DB columns to add (run once):
  *   ALTER TABLE user ADD COLUMN verification_code VARCHAR(10) DEFAULT NULL;
  *   ALTER TABLE user ADD COLUMN google_account    BOOLEAN     DEFAULT FALSE;
- *   ALTER TABLE user ADD COLUMN facebook_account  BOOLEAN     DEFAULT FALSE;
+ *   ALTER TABLE user ADD COLUMN face_registered   BOOLEAN     DEFAULT FALSE;
  *   ALTER TABLE user ADD COLUMN last_login        DATETIME    DEFAULT NULL;
  */
 public class User {
@@ -31,7 +31,7 @@ public class User {
     // ── new fields ────────────────────────────────────────────────────
     private String        verificationCode;
     private boolean       googleAccount;
-    private boolean       facebookAccount;
+    private boolean       faceRegistered;
     private LocalDateTime lastLogin;
 
     // ── constructors ──────────────────────────────────────────────────
@@ -43,7 +43,7 @@ public class User {
                 int roleId, LocalDateTime createdAt, LocalDateTime updatedAt,
                 boolean isVerified, String phone,
                 String verificationCode, boolean googleAccount,
-                boolean facebookAccount, LocalDateTime lastLogin) {
+                boolean faceRegistered, LocalDateTime lastLogin) {
         this.id               = id;
         this.name             = name;
         this.email            = email;
@@ -55,7 +55,7 @@ public class User {
         this.phone            = phone;
         this.verificationCode = verificationCode;
         this.googleAccount    = googleAccount;
-        this.facebookAccount  = facebookAccount;
+        this.faceRegistered   = faceRegistered;
         this.lastLogin        = lastLogin;
     }
 
@@ -104,8 +104,8 @@ public class User {
     public boolean isGoogleAccount()                         { return googleAccount; }
     public void setGoogleAccount(boolean googleAccount)      { this.googleAccount = googleAccount; }
 
-    public boolean isFacebookAccount()                       { return facebookAccount; }
-    public void setFacebookAccount(boolean facebookAccount)  { this.facebookAccount = facebookAccount; }
+    public boolean isFaceRegistered()                        { return faceRegistered; }
+    public void setFaceRegistered(boolean faceRegistered)    { this.faceRegistered = faceRegistered; }
 
     public LocalDateTime getLastLogin()                      { return lastLogin; }
     public void setLastLogin(LocalDateTime lastLogin)        { this.lastLogin = lastLogin; }

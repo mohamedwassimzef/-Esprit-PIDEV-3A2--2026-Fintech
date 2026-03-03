@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.Insets?>
 
+<!--
+  UserHome.fxml  (updated)
+    - Avatar (DiceBear pixel-art, auto-loaded)
+    - Face ID enrolment button + status
+    - Change Password collapsible panel
+-->
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.UserHomeController"
-            prefWidth="900" prefHeight="600"
+            prefWidth="920" prefHeight="700"
             style="-fx-background-color: #F3F4F6;">
 
-    <!-- TOP HEADER -->
+    <!-- HEADER -->
     <top>
         <HBox alignment="CENTER_LEFT" spacing="10"
               style="-fx-background-color: #1E3A8A;" prefHeight="70">
@@ -18,78 +25,135 @@
                    style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="🚪 Logout"
-                    style="-fx-background-color: #DC2626;
-                           -fx-text-fill: white;
-                           -fx-font-weight: bold;
-                           -fx-background-radius: 10;
-                           -fx-cursor: hand;"
+                    style="-fx-background-color: #DC2626; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"
                     onAction="#handleLogout"/>
         </HBox>
     </top>
 
-    <!-- CENTER CONTENT -->
+    <!-- CENTER -->
     <center>
-        <VBox alignment="CENTER" spacing="30">
-            <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox alignment="TOP_CENTER" spacing="22">
+                <padding><Insets top="28" right="40" bottom="40" left="40"/></padding>
 
-            <!-- Welcome Banner -->
-            <VBox alignment="CENTER" spacing="8"
-                  style="-fx-background-color: white;
-                         -fx-background-radius: 20;
-                         -fx-padding: 40;
-                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0, 0, 4);">
+                <!-- Welcome banner with avatar -->
+                <VBox alignment="CENTER" spacing="10"
+                      style="-fx-background-color: white; -fx-background-radius: 20;
+                             -fx-padding: 30; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0, 0, 4);">
 
-                <Label text="👋"
-                       style="-fx-font-size: 60px;"/>
+                    <!-- Avatar circle -->
+                    <StackPane alignment="CENTER">
+                        <Circle radius="52"
+                                fill="#E0E7FF"
+                                stroke="#7C3AED" strokeWidth="3"/>
+                        <ImageView fx:id="avatarView"
+                                   fitWidth="96" fitHeight="96"
+                                   preserveRatio="true" smooth="true">
+                            <clip>
+                                <Circle centerX="48" centerY="48" radius="48"/>
+                            </clip>
+                        </ImageView>
+                    </StackPane>
 
-                <Label fx:id="welcomeLabel"
-                       text="Welcome!"
-                       style="-fx-font-size: 30px;
-                              -fx-font-weight: bold;
-                              -fx-text-fill: #1E3A8A;"/>
+                    <Label fx:id="welcomeLabel" text="Welcome!"
+                           style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+                    <Label text="You are logged in to your FinTech account"
+                           style="-fx-font-size: 13px; -fx-text-fill: #6B7280;"/>
+                </VBox>
 
-                <Label text="You are logged in to your account"
-                       style="-fx-font-size: 15px;
-                              -fx-text-fill: #6B7280;"/>
-            </VBox>
+                <!-- Profile info card -->
+                <VBox spacing="14"
+                      style="-fx-background-color: white; -fx-background-radius: 20;
+                             -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 3);">
 
-            <!-- Profile Card -->
-            <VBox spacing="15"
-                  style="-fx-background-color: white;
-                         -fx-background-radius: 20;
-                         -fx-padding: 30;
-                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 3);">
+                    <Label text="👤 My Profile"
+                           style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+                    <Separator/>
 
-                <Label text="👤 My Profile"
-                       style="-fx-font-size: 18px;
-                              -fx-font-weight: bold;
-                              -fx-text-fill: #1E3A8A;"/>
+                    <HBox spacing="24">
+                        <VBox spacing="16">
+                            <Label text="Name :"         style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Email :"        style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Phone :"        style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Role :"         style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Verified :"     style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Member since :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                            <Label text="Face ID :"      style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
+                        </VBox>
+                        <VBox spacing="16">
+                            <Label fx:id="profileName"      text="—" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                            <Label fx:id="profileEmail"     text="—" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                            <Label fx:id="profilePhone"     text="—" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                            <Label fx:id="profileRole"      text="—" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                            <Label fx:id="profileVerified"  text="—" style="-fx-font-size: 14px;"/>
+                            <Label fx:id="profileCreatedAt" text="—" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+                            <Label fx:id="faceStatusLabel"  text="—" style="-fx-font-size: 14px;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
 
-                <Separator/>
-
-                <HBox spacing="20">
-                    <!-- Left column labels -->
-                    <VBox spacing="14">
-                        <Label text="Name :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                        <Label text="Email :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                        <Label text="Phone :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                        <Label text="Role :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                        <Label text="Verified :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                        <Label text="Member since :" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 14px;"/>
-                    </VBox>
-
-                    <!-- Right column values -->
-                    <VBox spacing="14">
-                        <Label fx:id="profileName"  text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
-                        <Label fx:id="profileEmail" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
-                        <Label fx:id="profilePhone" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
-                        <Label fx:id="profileRole"  text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
-                        <Label fx:id="profileVerified" text="-" style="-fx-font-size: 14px;"/>
-                        <Label fx:id="profileCreatedAt" text="-" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
-                    </VBox>
+                <!-- Action buttons row -->
+                <HBox spacing="14" alignment="CENTER">
+                    <Button text="🔑 Change Password"
+                            prefWidth="200" prefHeight="42"
+                            style="-fx-background-color: #1E3A8A; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-font-size: 14px;
+                                   -fx-background-radius: 12; -fx-cursor: hand;"
+                            onAction="#toggleChangePassword"/>
+                    <Button text="🤳 Enroll Face ID"
+                            prefWidth="200" prefHeight="42"
+                            style="-fx-background-color: #7C3AED; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-font-size: 14px;
+                                   -fx-background-radius: 12; -fx-cursor: hand;"
+                            onAction="#handleEnrollFace"/>
                 </HBox>
-            </VBox>
-        </VBox>
-    </center>
 
+                <!-- Change-password collapsible panel -->
+                <VBox fx:id="changePasswordSection" spacing="12"
+                      visible="false" managed="false"
+                      style="-fx-background-color: white; -fx-background-radius: 20;
+                             -fx-padding: 26; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 3);">
+
+                    <Label text="🔑 Change Password"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1E3A8A;"/>
+                    <Separator/>
+
+                    <Label text="Current Password" style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="oldPasswordField" promptText="Your current password"
+                                   style="-fx-background-radius: 10; -fx-border-color: #D1D5DB;
+                                          -fx-border-radius: 10; -fx-padding: 10;"/>
+
+                    <Label text="New Password" style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="newPasswordField" promptText="At least 6 characters"
+                                   style="-fx-background-radius: 10; -fx-border-color: #D1D5DB;
+                                          -fx-border-radius: 10; -fx-padding: 10;"/>
+
+                    <Label text="Confirm New Password" style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="confirmPasswordField" promptText="Repeat new password"
+                                   style="-fx-background-radius: 10; -fx-border-color: #D1D5DB;
+                                          -fx-border-radius: 10; -fx-padding: 10;"/>
+
+                    <Label fx:id="pwdMessage" text="" wrapText="true"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+
+                    <HBox spacing="12">
+                        <Button fx:id="savePwdBtn" text="✅ Save"
+                                prefWidth="170" prefHeight="40"
+                                style="-fx-background-color: #16A34A; -fx-text-fill: white;
+                                       -fx-font-weight: bold; -fx-font-size: 14px;
+                                       -fx-background-radius: 12; -fx-cursor: hand;"
+                                onAction="#handleSavePassword"/>
+                        <Button text="Cancel" prefWidth="100" prefHeight="40"
+                                style="-fx-background-color: transparent; -fx-text-fill: #6B7280;
+                                       -fx-border-color: #D1D5DB; -fx-border-radius: 12;
+                                       -fx-background-radius: 12; -fx-cursor: hand;"
+                                onAction="#toggleChangePassword"/>
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
 </BorderPane>

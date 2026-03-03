@@ -31,7 +31,7 @@ public class UserDAO implements CrudInterface<User> {
         String sql = """
                 INSERT INTO user
                     (name, email, password_hash, role_id, is_verified,
-                     phone, verification_code, google_account, facebook_account)
+                     phone, verification_code, google_account, face_registered)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -43,7 +43,7 @@ public class UserDAO implements CrudInterface<User> {
             ps.setString(6,  user.getPhone());
             ps.setString(7,  user.getVerificationCode());
             ps.setBoolean(8, user.isGoogleAccount());
-            ps.setBoolean(9, user.isFacebookAccount());
+            ps.setBoolean(9, user.isFaceRegistered());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("UserDAO.create: " + e.getMessage());
@@ -184,6 +184,21 @@ public class UserDAO implements CrudInterface<User> {
         }
     }
 
+
+    // ── face recognition helpers ─────────────────────────────────────
+
+    public boolean setFaceRegistered(int userId, boolean registered) {
+        String sql = "UPDATE user SET face_registered = ? WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setBoolean(1, registered);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("UserDAO.setFaceRegistered: " + e.getMessage());
+            return false;
+        }
+    }
+
     // ── session helpers ───────────────────────────────────────────────
 
     public boolean updateLastLogin(int userId) {
@@ -217,7 +232,7 @@ public class UserDAO implements CrudInterface<User> {
                 rs.getString("phone"),
                 rs.getString("verification_code"),
                 rs.getBoolean("google_account"),
-                rs.getBoolean("facebook_account"),
+                rs.getBoolean("face_registered"),
                 lastLogin
         );
     }
