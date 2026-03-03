@@ -118,34 +118,42 @@ public class LoginController {
         // Build the popup Stage
         captchaStage = new Stage();
         captchaStage.initModality(Modality.APPLICATION_MODAL);
-        captchaStage.initStyle(StageStyle.UNDECORATED);
-        captchaStage.setTitle("Verify you are human");
-        captchaStage.setResizable(false);
+        captchaStage.initStyle(StageStyle.DECORATED);
+        captchaStage.setTitle("Security Verification - Verify you are human");
+        captchaStage.setResizable(true);
+        captchaStage.setMinWidth(520);
+        captchaStage.setMinHeight(400);
 
-        Label header = new Label("Please complete the CAPTCHA");
-        header.setStyle("-fx-text-fill:#f5c800;-fx-font-size:14px;-fx-font-weight:700;");
+        Label header = new Label("Please complete the security challenge");
+        header.setStyle(
+            "-fx-text-fill:#f5c800;-fx-font-size:14px;-fx-font-weight:700;" +
+            "-fx-padding:0 0 4 0;"
+        );
 
+        Label subHeader = new Label("Complete the reCAPTCHA below to continue");
+        subHeader.setStyle("-fx-text-fill:#888;-fx-font-size:11px;");
+
+        // WebView large enough for the reCAPTCHA checkbox AND the image grid challenge
         WebView webView = new WebView();
-        webView.setPrefSize(340, 120);
-        webView.setMaxSize(340, 120);
-
-        Label hint = new Label("Solve the challenge above to continue");
-        hint.setStyle("-fx-text-fill:#888;-fx-font-size:10px;");
+        webView.setPrefSize(480, 520);
+        webView.setMinSize(480, 120);
+        webView.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        javafx.scene.layout.VBox.setVgrow(webView, javafx.scene.layout.Priority.ALWAYS);
 
         Button cancelBtn = new Button("Cancel");
         cancelBtn.setStyle(
-            "-fx-background-color:#222;-fx-text-fill:#aaa;-fx-font-size:11px;" +
-            "-fx-padding:6 20;-fx-cursor:hand;-fx-border-color:#333;-fx-border-radius:4;" +
-            "-fx-background-radius:4;"
+            "-fx-background-color:#1a1a1a;-fx-text-fill:#aaa;-fx-font-size:12px;" +
+            "-fx-padding:8 28;-fx-cursor:hand;-fx-border-color:#444;-fx-border-radius:5;" +
+            "-fx-background-radius:5;"
         );
         cancelBtn.setOnAction(e -> {
             stopCaptchaServer();
             captchaStage.close();
         });
 
-        VBox root = new VBox(12, header, webView, hint, cancelBtn);
+        VBox root = new VBox(10, header, subHeader, webView, cancelBtn);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(24, 28, 20, 28));
+        root.setPadding(new Insets(20, 24, 18, 24));
         root.setStyle(
             "-fx-background-color:#0d0d0d;" +
             "-fx-border-color:#f5c800;" +
@@ -154,7 +162,8 @@ public class LoginController {
             "-fx-background-radius:10;"
         );
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 528, 620);
+        scene.setFill(javafx.scene.paint.Color.web("#0d0d0d"));
         captchaStage.setScene(scene);
 
         // Load the captcha page
@@ -208,9 +217,19 @@ public class LoginController {
         return "<!DOCTYPE html><html><head>"
              + "<meta charset='utf-8'/>"
              + "<style>"
-             + "  body { margin:0; padding:12px; background:#0d0d0d; display:flex;"
-             + "         justify-content:center; align-items:center; min-height:80px; }"
-             + "  .g-recaptcha { transform:scale(0.92); transform-origin:center center; }"
+             + "  * { box-sizing: border-box; margin: 0; padding: 0; }"
+             + "  html, body {"
+             + "    background: #0d0d0d;"
+             + "    display: flex;"
+             + "    justify-content: center;"
+             + "    padding: 16px;"
+             + "    width: 100%;"
+             + "    min-height: 100vh;"
+             + "  }"
+             + "  .g-recaptcha {"
+             + "    transform: scale(1.0);"
+             + "    transform-origin: top center;"
+             + "  }"
              + "</style>"
              + "<script src='https://www.google.com/recaptcha/api.js' async defer></script>"
              + "</head><body>"
